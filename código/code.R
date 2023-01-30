@@ -35,10 +35,17 @@ write.csv(fito.raw, 'datos/fitoplancton.csv', row.names = F, na = '0')
 
 #### Rectangular ####
 # Ambientales
-env.rect <- read_csv('datos/ambiental.csv') %>% 
+env.pre <- read_csv('datos/ambiental.csv') %>% 
   pivot_longer(cols = c(1:37), names_to = 'var', values_to = 'value')
 
-write.csv(env.rect, 'datos/rectangulares/ambiental_rect.csv')
+# Añadir unidades
+uni <- read_csv('datos/crudos/unidades_ambiental.csv') %>%
+  select(3)
+
+env.rect <- cbind(env.pre, uni) %>% tibble %>% 
+  relocate(unidad, .after = var)
+
+write.csv(env.rect, 'datos/rectangulares/ambiental_rect.csv', fileEncoding =)
 
 # Zooplancton
 zoo.rect <- read_csv('datos/zooplancton.csv') %>% 
