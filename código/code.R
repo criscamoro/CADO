@@ -45,16 +45,16 @@ uni <- read_csv('datos/crudos/unidades_ambiental.csv') %>%
 env.rect <- cbind(env.pre, uni) %>% tibble %>% 
   relocate(unidad, .after = var)
 
-write.csv(env.rect, 'datos/rectangulares/ambiental_rect.csv', fileEncoding =)
+write.csv(env.rect, 'datos/rectangulares/ambiental_rect.csv', row.names = F)
 
 # Zooplancton
 zoo.rect <- read_csv('datos/zooplancton.csv') %>% 
   pivot_longer(cols = c(1:6), names_to = 'taxa', values_to = 'count')
 
-write.csv(zoo.rect, 'datos/rectangulares/zooplancton_rect.csv')
+write.csv(zoo.rect, 'datos/rectangulares/zooplancton_rect.csv', row.names = F)
 
 # Fitoplancton
 fito.rect <- read_csv('datos/fitoplancton.csv') %>% 
   pivot_longer(cols = c(1:60), names_to = 'taxa', values_to = 'count')
 
-write.csv(fito.rect, 'datos/rectangulares/fitoplancton_rect.csv')
+write.csv(fito.rect, 'datos/rectangulares/fitoplancton_rect.csv', row.names = F)
