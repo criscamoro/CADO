@@ -4,6 +4,7 @@
 library(tidyverse)
 library(readxl)
 library(qdap)
+library(lubridate)
 
 #### Preparación de datos
 
@@ -15,11 +16,11 @@ id.par <- read_excel('datos/crudos/LagunaCajititlan.xlsx', sheet = 'Parametros')
 id.est <- read_excel('datos/crudos/LagunaCajititlan.xlsx', sheet = 'Puntos de Muestreo') %>%
   slice(-15) # fila de valores NA 
 
-# Estaciones oficiales: LC-01 a LC-05, los datos crudos tienen otras estaciones
-id.est_of <- id.est %>% 
-  slice(c(11:15)) # a partir de septiembre del 30/09/2013 sólo se utilizan estas estaciones
+# Estaciones fijas: LC-01 a LC-05; no se registran datos en las demás estaciones desde el 30/09/2013
+id.est.fij <- id.est %>% 
+  slice(c(11:15)) 
 
-# Base de datos ambientales rectangular (key-value) sin excluir estaciones 
+# Base de datos ambientales rectangular (key-value)  
 amb.rect <- read_excel('datos/crudos/LagunaCajititlan.xlsx', sheet = 'Laguna de Cajititlán') %>%
   select(-1) %>%
   slice(-n()) %>% 
@@ -28,20 +29,26 @@ amb.rect <- read_excel('datos/crudos/LagunaCajititlan.xlsx', sheet = 'Laguna de 
   mutate(idParametro = as.character(idParametro)) %>%
   mutate(idParametro = as.character(mgsub(id.par$idParametros, id.par$param, idParametro)))
 
-# Base de datos ambientales rectangular (key-value)
-amb.rect_of <- amb.rect %>% 
-  mutate(idPuntoMuestreo = as.character(mgsub(id.est_of$idPunto, id.est_of$clave, idPuntoMuestreo))) %>% 
-  filter(idPuntoMuestreo == 'LC-01' | # filtrando para las estaciones LC-01 a LC-05
-           idPuntoMuestreo == 'LC-02' |
-           idPuntoMuestreo == 'LC-03' |
-           idPuntoMuestreo == 'LC-04' |
-           idPuntoMuestreo == 'LC-05')
-
-write.csv(amb.rect_of, 'datos/rectangulares/ambiental_rect.csv', row.names = F, na = '')
+# Sustitución de etiquetas y columna binaria de estación fija (LC-01 a LC-05 = TRUE)
+amb.rect.fij <- amb.rect %>% 
+  mutate(idPuntoMuestreo = as.character(mgsub(id.est.fij$idPunto, id.est.fij$clave, idPuntoMuestreo))) %>%
+  mutate(est_fijas = as.logical(idPuntoMuestreo == 'LC-01' |
+                                  idPuntoMuestreo == 'LC-02' |
+                                  idPuntoMuestreo == 'LC-03' |
+                                  idPuntoMuestreo == 'LC-04' |
+                                  idPuntoMuestreo == 'LC-05'))
+  
+write.csv(amb.rect.fij, 'datos/rectangulares/ambiental_rect.csv', row.names = F, na = '')
 
 # Base de datos ambientales formato tidy
-amb.tidy <- amb.rect_of %>%
-  pivot_wider(names_from = 'idParametro', values_from = 'valor') 
+amb.tidy <- amb.rect.fij %>%
+  pivot_wider(names_from = 'idParametro', values_from = 'valor') %>%
+  relocate(fecha, .after = 'Materia flotante') %>% 
+  mutate(año = as.numeric(year(fecha), origin = fecha)) %>% 
+  mutate(mes = as.numeric(month(fecha), origin = fecha)) %>% 
+  rename(est = idPuntoMuestreo) %>% 
+  relocate(est, .after = mes) %>% 
+  relocate(est_fijas, .after = fecha)
 
 write.csv(amb.tidy, 'datos/ambiental_tidy.csv', row.names = F, na = '')
 
@@ -61,7 +68,7 @@ zoo.rect <- read_csv('datos/zooplancton_tidy.csv') %>%
 
 write.csv(zoo.rect, 'datos/rectangulares/zooplancton_rect.csv', row.names = F)
 
-#### Abundancia de fitoplancton ####
+#### Fitoplancton ####
 # Base de datos de fitoplancton formato tidy
 fito.tidy <- read_excel('datos/crudos/Cajititlán_Bio.xlsx', sheet = 'FitoP', skip = 1) %>%
   slice(-c(1,62,66)) %>%
