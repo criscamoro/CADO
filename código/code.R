@@ -9,6 +9,10 @@ library(lubridate)
 #### Preparación de datos
 
 #### Datos ambientales ####
+# Descargar datos abiertos del portal de la CEA Jalisco
+download.file('https://www.ceajalisco.gob.mx/contenido/datos_abiertos/LagunaCajititlan.xlsx', 
+              'datos/crudos/LagunaCajititlan.xlsx', quiet = T, mode = 'wb') # "mode = 'wb'" para Windows
+
 # Etiquetas de los parámetros de calidad de agua
 id.par <- read_excel('datos/crudos/LagunaCajititlan.xlsx', sheet = 'Parametros') # ID de los parámetros
 
