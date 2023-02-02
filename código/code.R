@@ -98,4 +98,11 @@ ggplot(data = amb.rect.fij) +
   ) +
   facet_wrap(~ idParametro, scales = 'free')
 
+# Gráfico anterior, considerando sólo estaciones fijas
 
+ggplot(data = amb.rect.fij %>% 
+         filter(est_fijas == T)) +
+  geom_line(
+    mapping = aes(x = fecha, y = valor, color = idPuntoMuestreo)
+  ) +
+  facet_wrap(~ idParametro, scales = 'free')
