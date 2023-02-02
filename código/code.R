@@ -5,9 +5,9 @@ library(tidyverse)
 library(readxl)
 library(qdap)
 library(lubridate)
+library(ggside)
 
 #### Preparación de datos
-
 #### Datos ambientales ####
 # Descargar datos abiertos del portal de la CEA Jalisco
 download.file('https://www.ceajalisco.gob.mx/contenido/datos_abiertos/LagunaCajititlan.xlsx', 
@@ -87,3 +87,15 @@ fito.rect <- read_csv('datos/fitoplancton_tidy.csv') %>%
   pivot_longer(cols = c(1:60), names_to = 'taxa', values_to = 'conteo')
 
 write.csv(fito.rect, 'datos/rectangulares/fitoplancton_rect.csv', row.names = F)
+
+#### Análisis exploratorio ####
+
+# Gráfico de series temporales, localidades completas, agrupados por parámetro
+
+ggplot(data = amb.rect.fij) +
+  geom_line(
+    mapping = aes(x = fecha, y = valor, color = idPuntoMuestreo)
+  ) +
+  facet_wrap(~ idParametro, scales = 'free')
+
+
