@@ -7,6 +7,8 @@ library(qdap)
 library(lubridate)
 library(ggside)
 library(ggforce) #facet_wrap_paginate
+library(corrplot)
+
 #### Preparación de datos
 #### Datos ambientales ####
 # Descargar datos abiertos del portal de la CEA Jalisco
@@ -119,4 +121,22 @@ for (i in 1:5) {
       facet_wrap_paginate(~ idParametro, scales = 'free', nrow = 3, ncol = 3, page = i)
   )
 }
+
+# Matriz de correlaciones para identificar posibles variables redundantes
+
+amb.tidy.cor <- cor(amb.tidy[,1:45], use = 'pairwise.complete.obs') # matriz de correlación
+
+corrplot(amb.tidy.cor, type = 'upper', 
+         col = brewer.pal(n = 8, name = 'RdYlBu'))
+
+# Aisalar esas variables
+
+amb.tidy.cor.cured <- amb.tidy %>% 
+  select(Conductividad, `Alcalinidad total`, `Cloruros totales`, `Nitrógeno total`, 
+         `Nitrógeno total Kjeldahl`, SST, Sodio, `Sólidos disueltos tot.`, `Sólidos totales`, 
+         `Fósforo total`) %>% 
+  cor(use = 'pairwise.complete.obs')
+
+corrplot(amb.tidy.cor.cured, type = 'upper', 
+         col = brewer.pal(n = 8, name = 'RdYlBu'))
 
