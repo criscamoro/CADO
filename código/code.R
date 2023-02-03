@@ -6,7 +6,7 @@ library(readxl)
 library(qdap)
 library(lubridate)
 library(ggside)
-
+library(ggforce) #facet_wrap_paginate
 #### Preparación de datos
 #### Datos ambientales ####
 # Descargar datos abiertos del portal de la CEA Jalisco
@@ -106,3 +106,17 @@ ggplot(data = amb.rect.fij %>%
     mapping = aes(x = fecha, y = valor, color = idPuntoMuestreo)
   ) +
   facet_wrap(~ idParametro, scales = 'free')
+
+# Mismo gráfico, facets paginados
+
+for (i in 1:5) {
+  print(
+    ggplot(data = amb.rect.fij %>% 
+             filter(est_fijas == T)) +
+      geom_line(
+        mapping = aes(x = fecha, y = valor, color = idPuntoMuestreo)
+      ) +
+      facet_wrap_paginate(~ idParametro, scales = 'free', nrow = 3, ncol = 3, page = i)
+  )
+}
+
