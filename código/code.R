@@ -143,3 +143,23 @@ amb.tidy.cor.cured <- amb.tidy %>%
 corrplot(amb.tidy.cor.cured, type = 'upper', 
          col = brewer.pal(n = 8, name = 'RdYlBu'))
 
+# Coeficiente de variación 
+
+cv <- function(x) {
+  c.v <- (sd(x, na.rm = T)/mean(x, na.rm = T)*100)
+}
+
+amb.tidy.cv <- amb.tidy %>% 
+  filter(est_fijas == T) %>% 
+  group_by(año) %>% summarise_at(
+    vars(Temperatura:`Materia flotante`),
+    cv
+  )
+# 2020 sólo tiene una observación, por lo que no se puede evaluar cv() para ese año
+
+# prueba, falta facets
+ggplot(data = amb.tidy.cv) +
+  geom_line(
+    mapping = aes(x = año, y = Temperatura, group = 1)
+  ) 
+
