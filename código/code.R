@@ -28,8 +28,10 @@ id.est.fij <- id.est %>%
 
 # Base de datos ambientales rectangular (key-value)  
 amb.rect <- read_excel('datos/crudos/LagunaCajititlan.xlsx', sheet = 'Laguna de Cajititlán') %>%
-  select(-1) %>%
+  select(-1) %>% # quitar columna de idMuestra
   slice(-n()) %>% 
+  slice(-(22155:22404)) %>% # contiene fechas erróneas, datos duplicados y estaciones sin observaciones
+  mutate(fecha = as.Date(as.character(gsub('2017-04-24', '2017-04-27', fecha)))) %>% # fecha incorrecta
   mutate(valor = as.character(gsub('<', '', valor))) %>% 
   mutate(valor = as.numeric(gsub('-', '', valor))) %>% # "-" son valores NA
   mutate(idParametro = as.character(idParametro)) %>%
@@ -50,9 +52,10 @@ write.csv(amb.rect.fij, 'datos/rectangulares/ambiental_rect.csv', row.names = F,
 amb.tidy <- amb.rect.fij %>%
   pivot_wider(names_from = 'idParametro', values_from = 'valor') %>%
   relocate(fecha, .after = 'Materia flotante') %>% 
-  mutate(año = as.numeric(year(fecha), origin = fecha)) %>% 
-  mutate(mes = as.numeric(month(fecha), origin = fecha)) %>% 
+  mutate(año = as.factor(year(fecha))) %>% 
+  mutate(mes = as.factor(month(fecha))) %>% 
   rename(est = idPuntoMuestreo) %>% 
+  mutate(est = as.factor(est)) %>% 
   relocate(est, .after = mes) %>% 
   relocate(est_fijas, .after = fecha)
 
