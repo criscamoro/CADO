@@ -18,6 +18,9 @@ download.file('https://www.ceajalisco.gob.mx/contenido/datos_abiertos/LagunaCaji
 # Etiquetas de los parámetros de calidad de agua
 id.par <- read_excel('datos/crudos/LagunaCajititlan.xlsx', sheet = 'Parametros') # ID de los parámetros
 
+# Unidades de los parámetros de calidad de agua
+id.uni <- read_csv('datos/crudos/unidades.csv')
+
 # Etiquetas de las estaciones de muestreo
 id.est <- read_excel('datos/crudos/LagunaCajititlan.xlsx', sheet = 'Puntos de Muestreo') %>%
   slice(-15) # fila de valores NA 
@@ -35,7 +38,9 @@ amb.rect <- read_excel('datos/crudos/LagunaCajititlan.xlsx', sheet = 'Laguna de 
   mutate(valor = as.character(gsub('<', '', valor))) %>% 
   mutate(valor = as.numeric(gsub('-', '', valor))) %>% # "-" son valores NA
   mutate(idParametro = as.character(idParametro)) %>%
-  mutate(idParametro = as.character(mgsub(id.par$idParametros, id.par$param, idParametro)))
+  mutate(unidad = as.character(mgsub(id.par$idParametros, id.uni$unidad, idParametro))) %>% # unidades
+  mutate(idParametro = as.character(mgsub(id.par$idParametros, id.par$param, idParametro))) %>% 
+  relocate(unidad, .after = idParametro)
 
 # Sustitución de etiquetas y columna binaria de estación fija (LC-01 a LC-05 = TRUE)
 amb.rect.fij <- amb.rect %>% 
@@ -49,7 +54,7 @@ amb.rect.fij <- amb.rect %>%
 write.csv(amb.rect.fij, 'datos/rectangulares/ambiental_rect.csv', row.names = F, na = '')
 
 # Base de datos ambientales formato tidy
-amb.tidy <- amb.rect.fij %>%
+amb.tidy <- amb.rect.fij %>% select(-unidad) %>% # filtrar unidades para evitar pivotarlas
   pivot_wider(names_from = 'idParametro', values_from = 'valor') %>%
   relocate(fecha, .after = 'Materia flotante') %>% 
   mutate(año = as.factor(year(fecha))) %>% 

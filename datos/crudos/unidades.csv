@@ -1,0 +1,79 @@
+﻿idParametros,param,unidad
+1,Temperatura,°C
+2,pH,
+3,Oxígeno disuelto,mg/l
+4,Conductividad,µS/cm
+5,Turbiedad,UNT
+6,Alcalinidad total,mg CaCO3/l
+7,Cloruros totales,mg/l
+8,Dureza total,mg CaCO3/l
+9,Fluoruros,mg/l
+10,Nitrógeno de nitratos,mg/l
+11,Nitrógeno de nitritos,mg/l
+12,Nitrógeno amoniacal,mg/l
+13,Nitrógeno total Kjeldahl,mg/l
+14,Sulfatos,mg/l
+15,SAAM,mg/l
+16,DBO 5,mg/l
+17,DQO,mg/l
+18,Grasas y aceites,mg/l
+19,Fósforo total,mg/l
+20,SST,mg/l
+21,Sólidos disueltos tot.,mg/l
+22,Sólidos sedimentables,ml/l
+23,Sulfuros,mg/l
+24,Aluminio,mg/l
+25,Arsénico,mg/l
+26,Bario,mg/l
+27,Cadmio,mg/l
+28,Cobre,mg/l
+29,Cromo,mg/l
+30,Fierro,mg/l
+31,Manganeso,mg/l
+32,Mercurio,mg/l
+33,Níquel,mg/l
+34,Plomo,mg/l
+35,Sodio,mg/l
+36,Zinc,mg/l
+37,Coliformes totales,NMP/100ml
+38,Coliformes fecales,NMP/100ml
+39,Materia flotante,
+40,Cloro libre residual,mg/l
+41,Color,
+42,Gasto,
+43,Olor,
+44,O2 disuelto,mg/l
+45,Profundidad,m
+46,Temp. ambiente,°C
+47,Transparencia Secchi,m
+48,Acidez total,
+49,Alcalinidad fenolftaleína,
+50,Color verdadero,
+51,Cromo hexavalente,
+52,Dureza de calcio,mg CaCO3/l
+53,Dureza de manganeso,mg/l
+54,Fenoles,mg/l
+55,Sólidos totales,
+56,SDV,
+57,STV,
+58,SSV,
+59,SDF,
+60,STF,
+61,SSF,
+62,Ortofosfatos,
+63,Sílice,
+64,Cianuros,
+65,DBO Soluble,
+66,DQO Soluble,
+67,Coliformes fecales UFC,
+68,Coliformes totales UFC,
+69,Huevos de helminto,
+70,Plaguicidas,
+71,Trihalometanos,
+72,Herbicidas,
+73,Clorofila,
+74,Nitrógeno total,
+75,Clorofilas,mg/l
+76,Clorofila B,
+77,Clorofila C,
+78,Plata,
