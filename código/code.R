@@ -8,8 +8,12 @@ library(lubridate)
 library(ggside)
 library(ggforce) #facet_wrap_paginate
 library(corrplot)
-
-#### Preparación de datos
+#### Funciones ####
+# Coeficiente de variación 
+cv <- function(x) {
+  c.v <- (sd(x, na.rm = T)/mean(x, na.rm = T)*100)
+}
+#### Preparación de datos ####
 #### Datos ambientales ####
 # Descargar datos abiertos del portal de la CEA Jalisco
 download.file('https://www.ceajalisco.gob.mx/contenido/datos_abiertos/LagunaCajititlan.xlsx', 
@@ -100,8 +104,36 @@ write.csv(fito.rect, 'datos/rectangulares/fitoplancton_rect.csv', row.names = F)
 
 #### Análisis exploratorio ####
 
-# Gráfico de series temporales, localidades completas, agrupados por parámetro
+# Tabla de resumen estadística  descriptiva
+# por año en formato csv
+for (i in 2009:2022) {
+  amb.tidy %>%
+    filter(año == i) %>% 
+    select(1:45) %>% 
+  st(
+    title = paste('Variables ambientales del', as.character(i)),
+    summ = list(c('notNA(x)', 'mean(x)', 'sd(x)', 'min(x)', 'max(x)', 'cv(x)')),
+    summ.names = list(c('N', 'Media', 'D.E.', 'Min', 'Max', 'C.V.')),
+    out = 'csv',
+    file = paste('figuras/cuadros/csv/cuadro_', as.character(i), '.csv', sep = '')
+    )
+}
 
+# por año en formato html
+for (i in 2009:2022) {
+  amb.tidy %>%
+    filter(año == i) %>% 
+    select(1:45) %>% 
+    st(
+      title = paste('Variables ambientales del', as.character(i)),
+      summ = list(c('notNA(x)', 'mean(x)', 'sd(x)', 'min(x)', 'max(x)', 'cv(x)')),
+      summ.names = list(c('N', 'Media', 'D.E.', 'Min', 'Max', 'C.V.')),
+      out = 'htmlreturn',
+      file = paste('figuras/cuadros/html/cuadro_', as.character(i), sep = '')
+    )
+}
+
+# Gráfico de series temporales, localidades completas, agrupados por parámetro
 ggplot(data = amb.rect.fij) +
   geom_line(
     mapping = aes(x = fecha, y = valor, color = idPuntoMuestreo)
@@ -109,7 +141,6 @@ ggplot(data = amb.rect.fij) +
   facet_wrap(~ idParametro, scales = 'free')
 
 # Gráfico anterior, considerando sólo estaciones fijas
-
 ggplot(data = amb.rect.fij %>% 
          filter(est_fijas == T)) +
   geom_line(
@@ -118,7 +149,6 @@ ggplot(data = amb.rect.fij %>%
   facet_wrap(~ idParametro, scales = 'free')
 
 # Mismo gráfico, facets paginados
-
 for (i in 1:5) {
   print(
     ggplot(data = amb.rect.fij %>% 
@@ -131,14 +161,12 @@ for (i in 1:5) {
 }
 
 # Matriz de correlaciones para identificar posibles variables redundantes
-
 amb.tidy.cor <- cor(amb.tidy[,1:45], use = 'pairwise.complete.obs') # matriz de correlación
 
 corrplot(amb.tidy.cor, type = 'upper', 
          col = brewer.pal(n = 8, name = 'RdYlBu'))
 
 # Aisalar esas variables
-
 amb.tidy.cor.cured <- amb.tidy %>% 
   select(Conductividad, `Alcalinidad total`, `Cloruros totales`, `Nitrógeno total`, 
          `Nitrógeno total Kjeldahl`, SST, Sodio, `Sólidos disueltos tot.`, `Sólidos totales`, 
@@ -148,15 +176,18 @@ amb.tidy.cor.cured <- amb.tidy %>%
 corrplot(amb.tidy.cor.cured, type = 'upper', 
          col = brewer.pal(n = 8, name = 'RdYlBu'))
 
-# Coeficiente de variación 
-
-cv <- function(x) {
-  c.v <- (sd(x, na.rm = T)/mean(x, na.rm = T)*100)
-}
-
+# Por año
 amb.tidy.cv <- amb.tidy %>% 
   filter(est_fijas == T) %>% 
   group_by(año) %>% summarise_at(
+    vars(Temperatura:`Materia flotante`),
+    cv
+  )
+
+# Por estación y año
+amb.tidy.cv2 <- amb.tidy %>% 
+  filter(est_fijas == T) %>% 
+  group_by(año, est) %>% summarise_at(
     vars(Temperatura:`Materia flotante`),
     cv
   )
