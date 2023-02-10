@@ -6,8 +6,10 @@ library(readxl)
 library(qdap)
 library(lubridate)
 library(ggside)
-library(ggforce) #facet_wrap_paginate
+library(ggforce)
 library(corrplot)
+library(vtable)
+
 #### Funciones ####
 # Coeficiente de variación 
 cv <- function(x) {
@@ -104,7 +106,7 @@ write.csv(fito.rect, 'datos/rectangulares/fitoplancton_rect.csv', row.names = F)
 
 #### Análisis exploratorio ####
 
-# Tabla de resumen estadística  descriptiva
+#### Cuadros de resumen (estadística  descriptiva)
 # por año en formato csv
 for (i in 2009:2022) {
   amb.tidy %>%
@@ -133,6 +135,8 @@ for (i in 2009:2022) {
     )
 }
 
+#### Gráficos de series temporales
+
 # Gráfico de series temporales, localidades completas, agrupados por parámetro
 ggplot(data = amb.rect.fij) +
   geom_line(
@@ -160,7 +164,8 @@ for (i in 1:5) {
   )
 }
 
-# Matriz de correlaciones para identificar posibles variables redundantes
+#### Matriz de correlaciones para identificar posibles variables redundantes
+
 amb.tidy.cor <- cor(amb.tidy[,1:45], use = 'pairwise.complete.obs') # matriz de correlación
 
 corrplot(amb.tidy.cor, type = 'upper', 
@@ -176,26 +181,46 @@ amb.tidy.cor.cured <- amb.tidy %>%
 corrplot(amb.tidy.cor.cured, type = 'upper', 
          col = brewer.pal(n = 8, name = 'RdYlBu'))
 
-# Por año
-amb.tidy.cv <- amb.tidy %>% 
+### Series temporales del coeficiente de variación
+
+# Coeficiente de variación por año
+amb.tidy.cv.a <- amb.tidy %>% 
   filter(est_fijas == T) %>% 
   group_by(año) %>% summarise_at(
     vars(Temperatura:`Materia flotante`),
-    cv
-  )
+    cv)
 
-# Por estación y año
-amb.tidy.cv2 <- amb.tidy %>% 
+for (i in colnames(amb.tidy.cv.a[2:46])) {
+  print(
+    ggplot(data = amb.tidy.cv.a) +
+      geom_line(mapping = aes(x = año, y = amb.tidy.cv.a[[i]], group = 1)) +
+      labs(title = paste(i, '(coeficiente de variación)'),
+           y = 'COV') +
+      theme(plot.title = element_text(hjust = 0.5))
+  )
+}
+
+# Coeficiente de variación por año y mes (fecha)
+amb.tidy.cv.am <- amb.tidy %>% 
+  filter(est_fijas == T) %>% 
+  group_by(fecha) %>% summarise_at(
+    vars(Temperatura:`Materia flotante`),
+    cv)
+
+for (i in colnames(amb.tidy.cv.am[2:46])) {
+  print(
+    ggplot(data = amb.tidy.cv.am) +
+      geom_line(mapping = aes(x = año, y = amb.tidy.cv.am[[i]], group = 1)) +
+      labs(title = paste(i, '(coeficiente de variación)'),
+           y = 'COV') +
+      theme(plot.title = element_text(hjust = 0.5))
+  )
+}
+
+# Coeficiente de variación por estación y año
+amb.tidy.cv.ea <- amb.tidy %>% 
   filter(est_fijas == T) %>% 
   group_by(año, est) %>% summarise_at(
     vars(Temperatura:`Materia flotante`),
-    cv
-  )
+    cv)
 # 2020 sólo tiene una observación, por lo que no se puede evaluar cv() para ese año
-
-# prueba, falta facets
-ggplot(data = amb.tidy.cv) +
-  geom_line(
-    mapping = aes(x = año, y = Temperatura, group = 1)
-  ) 
-
