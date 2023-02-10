@@ -181,7 +181,7 @@ amb.tidy.cor.cured <- amb.tidy %>%
 corrplot(amb.tidy.cor.cured, type = 'upper', 
          col = brewer.pal(n = 8, name = 'RdYlBu'))
 
-### Series temporales del coeficiente de variación
+#### Series temporales del coeficiente de variación
 
 # Coeficiente de variación por año
 amb.tidy.cv.a <- amb.tidy %>% 
@@ -191,13 +191,15 @@ amb.tidy.cv.a <- amb.tidy %>%
     cv)
 
 for (i in colnames(amb.tidy.cv.a[2:46])) {
-  print(
-    ggplot(data = amb.tidy.cv.a) +
-      geom_line(mapping = aes(x = año, y = amb.tidy.cv.a[[i]], group = 1)) +
-      labs(title = paste(i, '(coeficiente de variación)'),
-           y = 'COV') +
-      theme(plot.title = element_text(hjust = 0.5))
-  )
+  ggsave(paste('figuras/cov/año/', i, '_cov.png', sep = ''), 
+         plot = 
+           ggplot(data = amb.tidy.cv.a) + 
+           geom_line(mapping = aes(x = año, y = .data[[i]], group = 1)) +
+           labs(title = paste(i, '(coeficiente de variación)'),
+                y = 'COV') +
+           theme(plot.title = element_text(hjust = 0.5)),
+         width = 1920, height = 1080, units = 'px', pointsize = 12, 
+         bg = 'white',dpi = 300)
 }
 
 # Coeficiente de variación por año y mes (fecha)
@@ -208,13 +210,15 @@ amb.tidy.cv.am <- amb.tidy %>%
     cv)
 
 for (i in colnames(amb.tidy.cv.am[2:46])) {
-  print(
-    ggplot(data = amb.tidy.cv.am) +
-      geom_line(mapping = aes(x = año, y = amb.tidy.cv.am[[i]], group = 1)) +
-      labs(title = paste(i, '(coeficiente de variación)'),
-           y = 'COV') +
-      theme(plot.title = element_text(hjust = 0.5))
-  )
+  ggsave(paste('figuras/cov/año+mes/', i, '_cov_am.png', sep = ''), 
+       plot = 
+         ggplot(data = amb.tidy.cv.am) + 
+         geom_line(mapping = aes(x = fecha, y = .data[[i]], group = 1)) +
+         labs(title = paste(i, '(coeficiente de variación)'),
+              x = 'fecha', y = 'COV') +
+         theme(plot.title = element_text(hjust = 0.5)),
+       width = 1920, height = 1080, units = 'px', pointsize = 12, 
+       bg = 'white',dpi = 300)
 }
 
 # Coeficiente de variación por estación y año
@@ -224,3 +228,5 @@ amb.tidy.cv.ea <- amb.tidy %>%
     vars(Temperatura:`Materia flotante`),
     cv)
 # 2020 sólo tiene una observación, por lo que no se puede evaluar cv() para ese año
+
+# pendiente loop para generar los gráficos 
