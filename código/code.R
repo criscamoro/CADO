@@ -9,12 +9,14 @@ library(ggside)
 library(ggforce)
 library(corrplot)
 library(vtable)
-
+library(vegan)
+library(clustsig)
 #### Funciones ####
 # Coeficiente de variación 
 cv <- function(x) {
   c.v <- (sd(x, na.rm = T)/mean(x, na.rm = T)*100)
 }
+
 #### Preparación de datos ####
 #### Datos ambientales ####
 # Descargar datos abiertos del portal de la CEA Jalisco
@@ -117,7 +119,7 @@ for (i in 2009:2022) {
     summ = list(c('notNA(x)', 'mean(x)', 'sd(x)', 'min(x)', 'max(x)', 'cv(x)')),
     summ.names = list(c('N', 'Media', 'D.E.', 'Min', 'Max', 'C.V.')),
     out = 'csv',
-    file = paste('figuras/cuadros/csv/cuadro_', as.character(i), '.csv', sep = '')
+    file = paste('figuras/cuadros/csv/yr/cuadro_', as.character(i), '.csv', sep = '')
     )
 }
 
@@ -131,10 +133,43 @@ for (i in 2009:2022) {
       summ = list(c('notNA(x)', 'mean(x)', 'sd(x)', 'min(x)', 'max(x)', 'cv(x)')),
       summ.names = list(c('N', 'Media', 'D.E.', 'Min', 'Max', 'C.V.')),
       out = 'htmlreturn',
-      file = paste('figuras/cuadros/html/cuadro_', as.character(i), sep = '')
+      file = paste('figuras/cuadros/html/yr/cuadro_', as.character(i), sep = '')
     )
 }
 
+# por parámetro, por año, en formato csv
+for (i in 1:45) {
+  amb.tidy %>%
+    select(i, año) %>%
+    group_by(año) %>% 
+    mutate(rn = row_number()) %>% 
+    pivot_wider(names_from = 2, values_from = 1) %>% 
+    select(-1) %>% 
+    st(
+      title = as.character(amb.tidy[i]),
+      summ = list(c('notNA(x)', 'mean(x)', 'sd(x)', 'min(x)', 'max(x)', 'cv(x)')),
+      summ.names = list(c('N', 'Media', 'D.E.', 'Min', 'Max', 'C.V.')),
+      out = 'csv',
+      file = paste('figuras/cuadros/csv/par_yr/cuadro_', colnames(amb.tidy[i]), '.csv', sep = '')
+    )
+}
+
+# por parámetro, por año, en formato html
+for (i in 1:45) {
+  amb.tidy %>%
+    select(i, año) %>%
+    group_by(año) %>% 
+    mutate(rn = row_number()) %>% 
+    pivot_wider(names_from = 2, values_from = 1) %>% 
+    select(-1) %>% 
+    st(
+      title = colnames(amb.tidy[i]),
+      summ = list(c('notNA(x)', 'mean(x)', 'sd(x)', 'min(x)', 'max(x)', 'cv(x)')),
+      summ.names = list(c('N', 'Media', 'D.E.', 'Min', 'Max', 'C.V.')),
+      out = 'htmlreturn',
+      file = paste('figuras/cuadros/html/par_yr/cuadro_', colnames(amb.tidy[i]), sep = '')
+    )
+}
 #### Gráficos de series temporales
 
 # Gráfico de series temporales, localidades completas, agrupados por parámetro
@@ -186,9 +221,10 @@ corrplot(amb.tidy.cor.cured, type = 'upper',
 # Coeficiente de variación por año
 amb.tidy.cv.a <- amb.tidy %>% 
   filter(est_fijas == T) %>% 
-  group_by(año) %>% summarise_at(
-    vars(Temperatura:`Materia flotante`),
-    cv)
+  group_by(año) %>% 
+  summarise(across(
+    Temperatura:`Materia flotante`, 
+    cv))
 
 for (i in colnames(amb.tidy.cv.a[2:46])) {
   ggsave(paste('figuras/cov/año/', i, '_cov.png', sep = ''), 
@@ -205,9 +241,10 @@ for (i in colnames(amb.tidy.cv.a[2:46])) {
 # Coeficiente de variación por año y mes (fecha)
 amb.tidy.cv.am <- amb.tidy %>% 
   filter(est_fijas == T) %>% 
-  group_by(fecha) %>% summarise_at(
-    vars(Temperatura:`Materia flotante`),
-    cv)
+  group_by(fecha) %>% 
+  summarise(across(
+    Temperatura:`Materia flotante`,
+    cv))
 
 for (i in colnames(amb.tidy.cv.am[2:46])) {
   ggsave(paste('figuras/cov/año+mes/', i, '_cov_am.png', sep = ''), 
@@ -224,9 +261,40 @@ for (i in colnames(amb.tidy.cv.am[2:46])) {
 # Coeficiente de variación por estación y año
 amb.tidy.cv.ea <- amb.tidy %>% 
   filter(est_fijas == T) %>% 
-  group_by(año, est) %>% summarise_at(
-    vars(Temperatura:`Materia flotante`),
-    cv)
+  group_by(año, est) %>% 
+  summarise(across(
+    Temperatura:`Materia flotante`,
+    cv))
 # 2020 sólo tiene una observación, por lo que no se puede evaluar cv() para ese año
 
-# pendiente loop para generar los gráficos 
+# SIMPROF 
+# estandarizar al valor máximo (0-1)
+amb.tidy.stand_max <- amb.tidy %>%
+  mutate(across(Temperatura:Clorofilas, # "across()" no permite evaluar argumentos ...
+                ~decostand(., method = 'max', na.rm = T))) %>% # ...se debe usar función anónima "~"
+  select(1:44) %>% 
+  simprof(
+    method.distance = 'euclidean',
+    method.cluster = 'average', 
+    sample.orientation = 'column', 
+    num.expected = 1000,
+    num.simulated = 999,
+    alpha = 0.05
+  )
+
+# alternativamente
+amb.tidy.stand_max2 <- amb.tidy[1:45] %>% 
+  decostand(method = 'max', na.rm = T) %>% 
+  simprof(
+    method.distance = 'euclidean',
+    method.cluster = 'average', 
+    sample.orientation = 'column', 
+    num.expected = 1000,
+    num.simulated = 999,
+    alpha = 0.05
+  )
+
+saveRDS(amb.tidy.stand_max2, 'datos/SIMPROF.RData')
+
+simprof.plot(amb.tidy.stand_max2)
+
