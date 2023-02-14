@@ -17,7 +17,7 @@ cv <- function(x) {
   c.v <- (sd(x, na.rm = T)/mean(x, na.rm = T)*100)
 }
 
-#### Preparación de datos ####
+###### Preparación de datos ####
 #### Datos ambientales ####
 # Descargar datos abiertos del portal de la CEA Jalisco
 download.file('https://www.ceajalisco.gob.mx/contenido/datos_abiertos/LagunaCajititlan.xlsx', 
@@ -106,9 +106,9 @@ fito.rect <- read_csv('datos/fitoplancton_tidy.csv') %>%
 
 write.csv(fito.rect, 'datos/rectangulares/fitoplancton_rect.csv', row.names = F)
 
-#### Análisis exploratorio ####
 
-#### Cuadros de resumen (estadística  descriptiva)
+###### Análisis exploratorio ####
+#### Cuadros de resumen #####
 # por año en formato csv
 for (i in 2009:2022) {
   amb.tidy %>%
@@ -170,7 +170,7 @@ for (i in 1:45) {
       file = paste('figuras/cuadros/html/par_yr/cuadro_', colnames(amb.tidy[i]), sep = '')
     )
 }
-#### Gráficos de series temporales
+#### Gráficos de series temporales ####
 
 # Gráfico de series temporales, localidades completas, agrupados por parámetro
 ggplot(data = amb.rect.fij) +
@@ -199,7 +199,8 @@ for (i in 1:5) {
   )
 }
 
-#### Matriz de correlaciones para identificar posibles variables redundantes
+#### Matriz de correlaciones ####
+# para identificar posibles variables redundantes
 
 amb.tidy.cor <- cor(amb.tidy[,1:45], use = 'pairwise.complete.obs') # matriz de correlación
 
@@ -216,7 +217,7 @@ amb.tidy.cor.cured <- amb.tidy %>%
 corrplot(amb.tidy.cor.cured, type = 'upper', 
          col = brewer.pal(n = 8, name = 'RdYlBu'))
 
-#### Series temporales del coeficiente de variación
+#### Series temporales del coeficiente de variación ####
 
 # Coeficiente de variación por año
 amb.tidy.cv.a <- amb.tidy %>% 
@@ -267,34 +268,76 @@ amb.tidy.cv.ea <- amb.tidy %>%
     cv))
 # 2020 sólo tiene una observación, por lo que no se puede evaluar cv() para ese año
 
-# SIMPROF 
-# estandarizar al valor máximo (0-1)
+#### SIMPROF y coherence plots ####
+# estandarizar media = 0, varianza = 1
 amb.tidy.stand_max <- amb.tidy %>%
   mutate(across(Temperatura:Clorofilas, # "across()" no permite evaluar argumentos ...
-                ~decostand(., method = 'max', na.rm = T))) %>% # ...se debe usar función anónima "~"
-  select(1:44) %>% 
-  simprof(
-    method.distance = 'euclidean',
-    method.cluster = 'average', 
-    sample.orientation = 'column', 
-    num.expected = 1000,
-    num.simulated = 999,
-    alpha = 0.05
+                ~decostand(., method = 'standardize', na.rm = T))) # ...se debe usar función anónima "~"
+
+# Matriz de correlación (Pearson)
+amb.tidy.stm.cor <- as_tibble(cor(amb.tidy.stand_max[1:44],
+                                  method = 'pearson',
+                                  use = 'pairwise.complete.obs'))
+
+# SIMPROF
+amb.tidy.simprof <- simprof(amb.tidy.stm.cor,
+                            sample.orientation = 'column',
+                            method.cluster = 'average',
+                            num.expected = 1000,
+                            num.simulated = 999,
+                            alpha = 0.05)
+
+simprof.plot(amb.tidy.simprof)
+
+# plot ejemplo para Temperatura y Temperatura Ambiental
+ggplot(data = amb.tidy.stand_max) +
+  geom_line(
+    mapping = aes(
+      x = fecha, 
+      y = .data[[amb.tidy.simprof[['significantclusters']][[15]][[1]]]]),
+    group = 1,
+    color = 'red') +
+  geom_point(
+    mapping = aes(
+      x = fecha, 
+      y = .data[[amb.tidy.simprof[['significantclusters']][[15]][[1]]]]),
+    color = 'red') +
+  geom_line(
+    mapping = aes(
+      x = fecha, 
+      y = .data[[amb.tidy.simprof[['significantclusters']][[15]][[2]]]]),
+    group = 1,
+    color = 'blue') +
+  geom_point(
+    mapping = aes(
+      x = fecha, 
+      y = .data[[amb.tidy.simprof[['significantclusters']][[15]][[2]]]]),
+    color = 'blue')
+
+# Plots ### pendiente
+for (i in amb.tidy.simprof$significantclusters) {
+  print(
+  ggplot(data = amb.tidy.stand_max) +
+    for (x in i) {
+      geom_line(
+        mapping = aes(x = fecha,
+                      y = .data[[x]]))
+    }
   )
+}
 
-# alternativamente
-amb.tidy.stand_max2 <- amb.tidy[1:45] %>% 
-  decostand(method = 'max', na.rm = T) %>% 
-  simprof(
-    method.distance = 'euclidean',
-    method.cluster = 'average', 
-    sample.orientation = 'column', 
-    num.expected = 1000,
-    num.simulated = 999,
-    alpha = 0.05
-  )
+#### test de Mantel
+# Matriz de correlación (Pearson)
+amb.tidy.stm.cor <- as_tibble(cor(amb.tidy.stand_max[1:44], use = 'complete.obs'))
+noc <- amb.tidy.stm.cor %>% 
+  select(-c(15, 22, 29, 33)) %>% 
+  slice(-c(15, 22, 29, 33))
 
-saveRDS(amb.tidy.stand_max2, 'datos/SIMPROF.RData')
+# Distancia euclidiana
+amb.tidy.stm.euc <- as_tibble(as.matrix((dist(c, method = 'euclidean')))) 
+noc2 <- amb.tidy.stm.euc %>% 
+  select(-c(15, 22, 29, 33)) %>% 
+  slice(-c(15, 22, 29, 33))
 
-simprof.plot(amb.tidy.stand_max2)
-
+# test de Mantel
+mantel(xdis = as.dist(noc), ydis = as.dist(noc2), method = 'spearman', permutations = 999)
