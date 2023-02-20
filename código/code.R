@@ -289,41 +289,24 @@ amb.tidy.simprof <- simprof(amb.tidy.stm.cor,
 
 simprof.plot(amb.tidy.simprof)
 
-# plot ejemplo para Temperatura y Temperatura Ambiental
-ggplot(data = amb.tidy.stand_max) +
-  geom_line(
-    mapping = aes(
-      x = fecha, 
-      y = .data[[amb.tidy.simprof[['significantclusters']][[15]][[1]]]]),
-    group = 1,
-    color = 'red') +
-  geom_point(
-    mapping = aes(
-      x = fecha, 
-      y = .data[[amb.tidy.simprof[['significantclusters']][[15]][[1]]]]),
-    color = 'red') +
-  geom_line(
-    mapping = aes(
-      x = fecha, 
-      y = .data[[amb.tidy.simprof[['significantclusters']][[15]][[2]]]]),
-    group = 1,
-    color = 'blue') +
-  geom_point(
-    mapping = aes(
-      x = fecha, 
-      y = .data[[amb.tidy.simprof[['significantclusters']][[15]][[2]]]]),
-    color = 'blue')
-
-# Plots ### pendiente
-for (i in amb.tidy.simprof$significantclusters) {
-  print(
-  ggplot(data = amb.tidy.stand_max) +
-    for (x in i) {
-      geom_line(
-        mapping = aes(x = fecha,
-                      y = .data[[x]]))
+# Coherence plots  
+cl <- colors() # para evaluar un color aleatorio 
+for (i in 1:14) {
+  p <- ggplot(data = amb.tidy.stand_max, aes(x = fecha, col = 'red'))
+    for (x in amb.tidy.simprof$significantclusters[[i]]) {
+      p <- p +
+        geom_line(aes(y = .data[[x]], 
+                      color = cl[sample(9:500, 1)])) # pendiente alternativa sin aleatorización
     }
-  )
+  p <- p + 
+    scale_color_hue(name = 'Parámetro', 
+                    labels = amb.tidy.simprof$significantclusters[[i]]) +
+    labs(title = paste(amb.tidy.simprof$significantclusters[[i]], collapse = ', '),
+         x = 'fecha', y = 'valor')
+    theme(plot.title = element_text(hjust = 0.5))
+  ggsave(paste('figuras/coherence/cohplot_', i, '.png'), plot = p,
+         width = 1920, height = 1080, units = 'px', pointsize = 12, 
+         bg = 'white',dpi = 300)
 }
 
 #### test de Mantel
