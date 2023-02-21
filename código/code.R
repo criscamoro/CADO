@@ -302,8 +302,10 @@ for (i in 1:14) {
     scale_color_hue(name = 'Parámetro', 
                     labels = amb.tidy.simprof$significantclusters[[i]]) +
     labs(title = paste(amb.tidy.simprof$significantclusters[[i]], collapse = ', '),
-         x = 'fecha', y = 'valor')
+         x = 'fecha', y = 'valor') +
+    theme_classic() +
     theme(plot.title = element_text(hjust = 0.5))
+  
   ggsave(paste('figuras/coherence/cohplot_', i, '.png'), plot = p,
          width = 1920, height = 1080, units = 'px', pointsize = 12, 
          bg = 'white',dpi = 300)
