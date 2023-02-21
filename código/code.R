@@ -11,6 +11,7 @@ library(corrplot)
 library(vtable)
 library(vegan)
 library(clustsig)
+
 #### Funciones ####
 # Coeficiente de variación 
 cv <- function(x) {
@@ -106,7 +107,6 @@ fito.rect <- read_csv('datos/fitoplancton_tidy.csv') %>%
 
 write.csv(fito.rect, 'datos/rectangulares/fitoplancton_rect.csv', row.names = F)
 
-
 ###### Análisis exploratorio ####
 #### Cuadros de resumen #####
 # por año en formato csv
@@ -170,8 +170,8 @@ for (i in 1:45) {
       file = paste('figuras/cuadros/html/par_yr/cuadro_', colnames(amb.tidy[i]), sep = '')
     )
 }
-#### Gráficos de series temporales ####
 
+#### Gráficos de series temporales ####
 # Gráfico de series temporales, localidades completas, agrupados por parámetro
 ggplot(data = amb.rect.fij) +
   geom_line(mapping = aes(x = fecha, 
@@ -218,7 +218,6 @@ corrplot(amb.tidy.cor.cured, type = 'upper',
          col = brewer.pal(n = 8, name = 'RdYlBu'))
 
 #### Series temporales del coeficiente de variación ####
-
 # Coeficiente de variación por año
 amb.tidy.cv.a <- amb.tidy %>% 
   filter(est_fijas == T) %>% 
@@ -276,12 +275,12 @@ amb.tidy.cv.ea <- amb.tidy %>%
 
 #### SIMPROF y coherence plots ####
 # estandarizar media = 0, varianza = 1
-amb.tidy.stand_max <- amb.tidy %>%
+amb.tidy.stm <- amb.tidy %>%
   mutate(across(Temperatura:Clorofilas, # "across()" no permite evaluar argumentos ...
                 ~decostand(., method = 'standardize', na.rm = T))) # ...se debe usar función anónima "~"
 
 # Matriz de correlación (Pearson)
-amb.tidy.stm.cor <- as_tibble(cor(amb.tidy.stand_max[1:44],
+amb.tidy.stm.cor <- as_tibble(cor(amb.tidy.stm[1:44],
                                   method = 'pearson',
                                   use = 'pairwise.complete.obs'))
 
@@ -296,11 +295,10 @@ amb.tidy.simprof <- simprof(amb.tidy.stm.cor,
 simprof.plot(amb.tidy.simprof)
 
 # Coherence plots  
-
 cl <- colors() # para evaluar un color aleatorio 
 
 for (i in 1:14) {
-  p <- ggplot(data = amb.tidy.stand_max, 
+  p <- ggplot(data = amb.tidy.stm, 
               aes(x = fecha, col = 'red'))
     for (x in amb.tidy.simprof$significantclusters[[i]]) {
       p <- p +
@@ -321,7 +319,7 @@ for (i in 1:14) {
 
 #### test de Mantel
 # Matriz de correlación (Pearson)
-amb.tidy.stm.cor <- as_tibble(cor(amb.tidy.stand_max[1:44], use = 'complete.obs'))
+amb.tidy.stm.cor <- as_tibble(cor(amb.tidy.stm[1:44], use = 'complete.obs'))
 noc <- amb.tidy.stm.cor %>% 
   select(-c(15, 22, 29, 33)) %>% 
   slice(-c(15, 22, 29, 33))
@@ -336,7 +334,7 @@ noc2 <- amb.tidy.stm.euc %>%
 mantel(xdis = as.dist(noc), ydis = as.dist(noc2), method = 'spearman', permutations = 999)
 
 #### Proporción TN:TP ####
-# Cómputo de la proporción de Nitrógeno total y Fósforo total
+# Proporción de Nitrógeno total/Fósforo total
 amb.tidy.tntp <- amb.tidy %>% 
   mutate(`TN:TP` = `Nitrógeno total`/`Fósforo total`) %>% 
   relocate(`TN:TP`, .after = `Materia flotante`)
