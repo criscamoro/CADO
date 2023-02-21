@@ -174,17 +174,17 @@ for (i in 1:45) {
 
 # Gráfico de series temporales, localidades completas, agrupados por parámetro
 ggplot(data = amb.rect.fij) +
-  geom_line(
-    mapping = aes(x = fecha, y = valor, color = idPuntoMuestreo)
-  ) +
+  geom_line(mapping = aes(x = fecha, 
+                          y = valor, 
+                          color = idPuntoMuestreo)) +
   facet_wrap(~ idParametro, scales = 'free')
 
 # Gráfico anterior, considerando sólo estaciones fijas
 ggplot(data = amb.rect.fij %>% 
          filter(est_fijas == T)) +
-  geom_line(
-    mapping = aes(x = fecha, y = valor, color = idPuntoMuestreo)
-  ) +
+  geom_line(mapping = aes(x = fecha, 
+                          y = valor, 
+                          color = idPuntoMuestreo)) +
   facet_wrap(~ idParametro, scales = 'free')
 
 # Mismo gráfico, facets paginados
@@ -192,11 +192,11 @@ for (i in 1:5) {
   print(
     ggplot(data = amb.rect.fij %>% 
              filter(est_fijas == T)) +
-      geom_line(
-        mapping = aes(x = fecha, y = valor, color = idPuntoMuestreo)
-      ) +
+      geom_line(mapping = aes(x = fecha, 
+                              y = valor, 
+                              color = idPuntoMuestreo)) +
       facet_wrap_paginate(~ idParametro, scales = 'free', nrow = 3, ncol = 3, page = i)
-  )
+    )
 }
 
 #### Matriz de correlaciones ####
@@ -231,12 +231,16 @@ for (i in colnames(amb.tidy.cv.a[2:46])) {
   ggsave(paste('figuras/cov/año/', i, '_cov.png', sep = ''), 
          plot = 
            ggplot(data = amb.tidy.cv.a) + 
-           geom_line(mapping = aes(x = año, y = .data[[i]], group = 1)) +
+           geom_line(mapping = aes(x = año, 
+                                   y = .data[[i]], 
+                                   group = 1)) +
            labs(title = paste(i, '(coeficiente de variación)'),
                 y = 'COV') +
-           theme(plot.title = element_text(hjust = 0.5)),
+           theme(plot.title = element_text(hjust = 0.5)) +
+           theme_classic(),
          width = 1920, height = 1080, units = 'px', pointsize = 12, 
-         bg = 'white',dpi = 300)
+         bg = 'white',dpi = 300
+         )
 }
 
 # Coeficiente de variación por año y mes (fecha)
@@ -254,9 +258,11 @@ for (i in colnames(amb.tidy.cv.am[2:46])) {
          geom_line(mapping = aes(x = fecha, y = .data[[i]], group = 1)) +
          labs(title = paste(i, '(coeficiente de variación)'),
               x = 'fecha', y = 'COV') +
-         theme(plot.title = element_text(hjust = 0.5)),
+         theme(plot.title = element_text(hjust = 0.5)) +
+         theme_classic(),
        width = 1920, height = 1080, units = 'px', pointsize = 12, 
-       bg = 'white',dpi = 300)
+       bg = 'white',dpi = 300
+       )
 }
 
 # Coeficiente de variación por estación y año
@@ -290,9 +296,12 @@ amb.tidy.simprof <- simprof(amb.tidy.stm.cor,
 simprof.plot(amb.tidy.simprof)
 
 # Coherence plots  
+
 cl <- colors() # para evaluar un color aleatorio 
+
 for (i in 1:14) {
-  p <- ggplot(data = amb.tidy.stand_max, aes(x = fecha, col = 'red'))
+  p <- ggplot(data = amb.tidy.stand_max, 
+              aes(x = fecha, col = 'red'))
     for (x in amb.tidy.simprof$significantclusters[[i]]) {
       p <- p +
         geom_line(aes(y = .data[[x]], 
@@ -305,7 +314,6 @@ for (i in 1:14) {
          x = 'fecha', y = 'valor') +
     theme_classic() +
     theme(plot.title = element_text(hjust = 0.5))
-  
   ggsave(paste('figuras/coherence/cohplot_', i, '.png'), plot = p,
          width = 1920, height = 1080, units = 'px', pointsize = 12, 
          bg = 'white',dpi = 300)
@@ -326,3 +334,28 @@ noc2 <- amb.tidy.stm.euc %>%
 
 # test de Mantel
 mantel(xdis = as.dist(noc), ydis = as.dist(noc2), method = 'spearman', permutations = 999)
+
+#### Proporción TN:TP ####
+# Cómputo de la proporción de Nitrógeno total y Fósforo total
+amb.tidy.tntp <- amb.tidy %>% 
+  mutate(`TN:TP` = `Nitrógeno total`/`Fósforo total`) %>% 
+  relocate(`TN:TP`, .after = `Materia flotante`)
+
+# Series temporales
+ggplot(data = amb.tidy.tntp) +
+  geom_line(aes(x = fecha, 
+                y = `TN:TP`)) +
+  theme_classic()
+
+# Resumen por mes (histórico) 
+ggplot(data = amb.tidy.tntp) +
+  geom_boxplot(aes(x = mes, 
+                   y = `TN:TP`)) +
+  theme_classic()
+
+# Resumen por mes (2022)
+ggplot(data = amb.tidy.tntp %>% 
+         filter(año == 2022)) +
+  geom_boxplot(aes(x = mes, 
+                   y = `TN:TP`)) +
+  theme_classic()
