@@ -295,27 +295,28 @@ amb.tidy.simprof <- simprof(amb.tidy.stm.cor,
 simprof.plot(amb.tidy.simprof)
 
 # Coherence plots  
-cl <- colors() # para evaluar un color aleatorio 
 
-for (i in 1:14) {
-  p <- ggplot(data = amb.tidy.stm, 
-              aes(x = fecha, col = 'red'))
-    for (x in amb.tidy.simprof$significantclusters[[i]]) {
-      p <- p +
-        geom_line(aes(y = .data[[x]], 
-                      color = cl[sample(9:500, 1)])) # pendiente alternativa sin aleatorización
-    }
-  p <- p + 
-    scale_color_hue(name = 'Parámetro', 
-                    labels = amb.tidy.simprof$significantclusters[[i]]) +
-    labs(title = paste(amb.tidy.simprof$significantclusters[[i]], collapse = ', '),
-         x = 'fecha', y = 'valor') +
-    theme_classic() +
-    theme(plot.title = element_text(hjust = 0.5))
-  ggsave(paste('figuras/coherence/cohplot_', i, '.png'), plot = p,
-         width = 1920, height = 1080, units = 'px', pointsize = 12, 
-         bg = 'white',dpi = 300)
+coh_plot <- function(i) {
+  col.vec <- scales::hue_pal()(sum(lengths(i))) 
+  names(col.vec) <- unlist(i)
+  ggsave(paste('figuras/coherence/cohplot_', paste(i, collapse = '_'), '.png', sep = ''), 
+         plot = 
+           ggplot(data = amb.tidy.stm, aes(x = fecha)) +
+           lapply(i, function(x) {
+             geom_line(aes(y = .data[[x]], color = x))
+           }) +
+           scale_color_manual(name = 'Parámetro', values = col.vec) +
+           labs(
+             title = paste(i, collapse = ", "),
+             x = "fecha", y = "valor") +
+           theme_classic() +
+           theme(plot.title = element_text(hjust = 0.5)),
+         width = 1920, height = 1080, units = 'px', pointsize = 12,
+         bg = 'white',dpi = 300
+         )
 }
+
+lapply(amb.tidy.simprof$significantclusters, coh_plot)
 
 #### test de Mantel
 # Matriz de correlación (Pearson)
