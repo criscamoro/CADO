@@ -5,6 +5,7 @@ library(tidyverse)
 library(readxl)
 library(qdap)
 library(lubridate)
+library(ggtext)
 library(ggside)
 library(ggforce)
 library(corrplot)
@@ -306,11 +307,10 @@ coh_plot <- function(i) {
              geom_line(aes(y = .data[[x]], color = x))
            }) +
            scale_color_manual(name = 'Parámetro', values = col.vec) +
-           labs(
-             title = paste(i, collapse = ", "),
-             x = "fecha", y = "valor") +
+           labs(title = paste(i, collapse = ", "),
+                x = "fecha", y = "valor") +
            theme_classic() +
-           theme(plot.title = element_text(hjust = 0.5)),
+           theme(plot.title = element_textbox_simple(halign = 0.5, margin = unit(c(5, 0, 5, 0), 'pt'))),
          width = 1920, height = 1080, units = 'px', pointsize = 12,
          bg = 'white',dpi = 300
          )
