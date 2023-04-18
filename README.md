@@ -1,6 +1,6 @@
 ### Programa de monitoreo de la limnología de cuerpos de agua dulce de Occidente
 
-Repositorio del programa de monitoreo de las características fisicomquímicas de cuerpos de agua continentales de Jalisco por parte del *Laboratorio de Ecosistemas Marinos y Acuicultura* en colaboración con el *Instituto de Limnología* de la **Universidad de Guadalajara**; con el objetivo de evaluar el estado de estos cuerpos de agua como reservas para el suministro en comunidades aledañas, así como generar información básica para el estudio de poblaciones de organismos de interés.
+Repositorio del programa de monitoreo de las características fisicoquímicas de cuerpos de agua continentales de Jalisco por parte del *Laboratorio de Ecosistemas Marinos y Acuicultura* en colaboración con el *Instituto de Limnología* de la **Universidad de Guadalajara**; con el objetivo de evaluar el estado de estos cuerpos de agua como reservas para el suministro en comunidades aledañas, así como generar información básica para el estudio de poblaciones de organismos de interés.
 
 *comentario: Pendiente mencionar las aportaciones de la Comisión Estatal del Agua en Jalisco (CEA Jalisco)*
 

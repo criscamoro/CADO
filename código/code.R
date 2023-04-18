@@ -2,7 +2,7 @@
 
 #### Paquetes ####
 library(tidyverse)
-library(readxl)
+library(openxlsx)
 library(qdap)
 library(lubridate)
 library(ggtext)
@@ -13,224 +13,189 @@ library(vtable)
 library(vegan)
 library(clustsig)
 
-#### Funciones ####
-# Coeficiente de variación 
-cv <- function(x) {
-  c.v <- (sd(x, na.rm = T)/mean(x, na.rm = T)*100)
+#### Preparación de datos ####
+# Datos ambientales ----
+# Nombres
+nom <- c('caji', # Laguna de Cajititlán
+         'zapo', # Laguna de Zapotlán
+         'verde', # Río Verde
+         'lerma', # Río Zula-Lerma
+         'santi') # Río Santiago
+
+# Actualizar datos
+source('código/get_data.R')
+
+# Cargar datos en el Global Enviroment
+datos <- function(n) {
+  assign(x = paste(n, '_amb_tidy', sep = ''), 
+         value = readRDS(paste('datos/tidy/', n, '_amb_tidy.rds', sep = '')),
+         envir = .GlobalEnv)
 }
 
-###### Preparación de datos ####
-#### Datos ambientales ####
-# Descargar datos abiertos del portal de la CEA Jalisco
-download.file('https://www.ceajalisco.gob.mx/contenido/datos_abiertos/LagunaCajititlan.xlsx', 
-              'datos/crudos/LagunaCajititlan.xlsx', quiet = T, mode = 'wb') # "mode = 'wb'" para Windows
-
-# Etiquetas de los parámetros de calidad de agua
-id.par <- read_excel('datos/crudos/LagunaCajititlan.xlsx', sheet = 'Parametros') # ID de los parámetros
-
-# Unidades de los parámetros de calidad de agua
-id.uni <- read_csv('datos/crudos/unidades.csv')
-
-# Etiquetas de las estaciones de muestreo
-id.est <- read_excel('datos/crudos/LagunaCajititlan.xlsx', sheet = 'Puntos de Muestreo') %>%
-  slice(-15) # fila de valores NA 
-
-# Estaciones fijas: LC-01 a LC-05; no se registran datos en las demás estaciones desde el 30/09/2013
-id.est.fij <- id.est %>% 
-  slice(c(11:15)) 
-
-# Base de datos ambientales rectangular (key-value)  
-amb.rect <- read_excel('datos/crudos/LagunaCajititlan.xlsx', sheet = 'Laguna de Cajititlán') %>%
-  select(-1) %>% # quitar columna de idMuestra
-  slice(-n()) %>% 
-  slice(-(22155:22404)) %>% # contiene fechas erróneas, datos duplicados y estaciones sin observaciones
-  mutate(fecha = as.Date(as.character(gsub('2017-04-24', '2017-04-27', fecha)))) %>% # fecha incorrecta
-  mutate(valor = as.character(gsub('<', '', valor))) %>% 
-  mutate(valor = as.numeric(gsub('-', '', valor))) %>% # "-" son valores NA
-  mutate(idParametro = as.character(idParametro)) %>%
-  mutate(unidad = as.character(mgsub(id.par$idParametros, id.uni$unidad, idParametro))) %>% # unidades
-  mutate(idParametro = as.character(mgsub(id.par$idParametros, id.par$param, idParametro))) %>% 
-  relocate(unidad, .after = idParametro)
-
-# Sustitución de etiquetas y columna binaria de estación fija (LC-01 a LC-05 = TRUE)
-amb.rect.fij <- amb.rect %>% 
-  mutate(idPuntoMuestreo = as.character(mgsub(id.est.fij$idPunto, id.est.fij$clave, idPuntoMuestreo))) %>%
-  mutate(est_fijas = as.logical(idPuntoMuestreo == 'LC-01' |
-                                  idPuntoMuestreo == 'LC-02' |
-                                  idPuntoMuestreo == 'LC-03' |
-                                  idPuntoMuestreo == 'LC-04' |
-                                  idPuntoMuestreo == 'LC-05'))
+lapply(nom, datos)
   
-write.csv(amb.rect.fij, 'datos/rectangulares/ambiental_rect.csv', row.names = F, na = '')
+# Guardar datos como csv
+guardar_csv <- function(n) {
+  write.csv(
+    x = get(paste(n, '_amb_tidy', sep = '')),
+    file = paste('datos/tidy/', n, '_amb_tidy.csv', sep = ''),
+    na = ''
+    )
+}
 
-# Base de datos ambientales formato tidy
-amb.tidy <- amb.rect.fij %>% select(-unidad) %>% # filtrar unidades para evitar pivotarlas
-  pivot_wider(names_from = 'idParametro', values_from = 'valor') %>%
-  relocate(fecha, .after = 'Materia flotante') %>% 
-  mutate(año = as.factor(year(fecha))) %>% 
-  mutate(mes = as.factor(month(fecha))) %>% 
-  rename(est = idPuntoMuestreo) %>% 
-  mutate(est = as.factor(est)) %>% 
-  relocate(est, .after = mes) %>% 
-  relocate(est_fijas, .after = fecha)
+lapply(nom, guardar_csv)
 
-write.csv(amb.tidy, 'datos/ambiental_tidy.csv', row.names = F, na = '')
+# Formato rectangular (key-value)
+guardar_rect <- function(n) {
+  write.csv(
+    x = get(paste(n, '_amb_tidy', sep = '')) %>% 
+      pivot_longer(
+        cols = !c(fecha, año, mes, est),
+        names_to = 'parámetro',
+        values_to = 'valor'
+      ),
+    file = paste('datos/rectangulares/', n, '_amb_rect.csv', sep = ''),
+    row.names = F, 
+    na = ''
+  )
+}
 
-#### Zooplancton ####
+lapply(nom, guardar_rect)
+
+# Cargar datos rectangulares en el Global Enviroment
+datos_rect <- function(n) {
+  assign(
+    x = paste(n, '_amb_rect', sep = ''),
+    value = read_csv(paste('datos/rectangulares/', n, '_amb_rect.csv', sep = '')),
+    envir = .GlobalEnv)
+}
+
+lapply(nom, datos_rect)
+
+# Zooplancton de la Laguna de Cajititlán ----
 # Base de datos de zooplancton formato tidy
-zoo.tidy <- read_excel('datos/crudos/Cajititlán_Bio.xlsx', 
-                      sheet = 'ZooP', col_names = F, skip = 1) %>% 
-  slice(-c(1,8)) %>%
-  column_to_rownames('...1') %>%
-  t
+write.csv(
+  x = as_tibble(read.xlsx('datos/crudos/Cajititlán_Bio.xlsx', sheet = 'ZooP', colNames = F, startRow = 3)) %>%
+    slice(-8) %>% 
+    column_to_rownames('X1') %>% t, 
+  file = 'datos/tidy/caji_zoo_tidy.csv', 
+  row.names = F,
+  na = '0'
+  )
 
-write.csv(zoo.tidy, 'datos/zooplancton_tidy.csv', row.names = F)
+caji_zoo_tidy <- read_csv('datos/tidy/caji_zoo_tidy.csv')
 
 # Base de datos de zooplancton rectangular (key-value)
-zoo.rect <- read_csv('datos/zooplancton_tidy.csv') %>% 
-  pivot_longer(cols = c(1:6), names_to = 'taxa', values_to = 'conteo')
+write.csv(
+  x = caji_zoo_tidy %>% 
+    pivot_longer(
+      cols = !c(mes, est),
+      names_to = 'taxa',
+      values_to = 'conteo'
+    ),
+  file = 'datos/rectangulares/caji_zoo_rect.csv',
+  row.names = F,
+  na = '0'
+  )
 
-write.csv(zoo.rect, 'datos/rectangulares/zooplancton_rect.csv', row.names = F)
+caji_zoo_rect <- read_csv('datos/rectangulares/caji_zoo_rect.csv')
 
-#### Fitoplancton ####
+# Fitoplancton de la Laguna de Cajititlán ----
 # Base de datos de fitoplancton formato tidy
-fito.tidy <- read_excel('datos/crudos/Cajititlán_Bio.xlsx', sheet = 'FitoP', skip = 1) %>%
-  slice(-c(1,62,66)) %>%
-  select(-c('...317','Toxicidad','División')) %>%
-  column_to_rownames('...1') %>% 
-  t
+write.csv(
+  x = as_tibble(read.xlsx('datos/crudos/Cajititlán_Bio.xlsx',  sheet = 'FitoP', colNames = F, startRow = 3, cols =  c(1:317))) %>% 
+    slice(-65) %>% 
+    column_to_rownames('X1') %>% t,
+  file = 'datos/tidy/caji_fito_tidy.csv',
+  row.names = F,
+  na = '0'
+)
 
-write.csv(fito.tidy, 'datos/fitoplancton_tidy.csv', row.names = F, na = '0')
+caji_fito_tidy <- read_csv('datos/tidy/caji_fito_tidy.csv')
 
 # Base de datos de fitoplancton rectangular (key-value)
-fito.rect <- read_csv('datos/fitoplancton_tidy.csv') %>% 
-  pivot_longer(cols = c(1:60), names_to = 'taxa', values_to = 'conteo')
+write.csv(
+  x = caji_fito_tidy %>% 
+    pivot_longer(
+      cols = !c(año, mes, est),
+      names_to = 'taxa',
+      values_to = 'conteo'
+    ),
+  file = 'datos/rectangulares/caji_fito_rect.csv',
+  row.names = F,
+  na = '0'
+)
 
-write.csv(fito.rect, 'datos/rectangulares/fitoplancton_rect.csv', row.names = F)
+caji_fito_rect <- read_csv('datos/rectangulares/caji_fito_rect.csv')
 
-###### Análisis exploratorio ####
-#### Cuadros de resumen #####
-# por año en formato csv
-for (i in 2009:2022) {
-  amb.tidy %>%
-    filter(año == i) %>% 
-    select(1:45) %>% 
-  st(
-    title = paste('Variables ambientales del', as.character(i)),
-    summ = list(c('notNA(x)', 'mean(x)', 'sd(x)', 'min(x)', 'max(x)', 'cv(x)')),
-    summ.names = list(c('N', 'Media', 'D.E.', 'Min', 'Max', 'C.V.')),
-    out = 'csv',
-    file = paste('figuras/cuadros/csv/yr/cuadro_', as.character(i), '.csv', sep = '')
-    )
-}
-
-# por año en formato html
-for (i in 2009:2022) {
-  amb.tidy %>%
-    filter(año == i) %>% 
-    select(1:45) %>% 
-    st(
-      title = paste('Variables ambientales del', as.character(i)),
-      summ = list(c('notNA(x)', 'mean(x)', 'sd(x)', 'min(x)', 'max(x)', 'cv(x)')),
-      summ.names = list(c('N', 'Media', 'D.E.', 'Min', 'Max', 'C.V.')),
-      out = 'htmlreturn',
-      file = paste('figuras/cuadros/html/yr/cuadro_', as.character(i), sep = '')
-    )
-}
-
+#### Análisis exploratorio ####
+# Cuadros de resumen estadístico ----
 # por parámetro, por año, en formato csv
-for (i in 1:45) {
-  amb.tidy %>%
-    select(i, año) %>%
-    group_by(año) %>% 
-    mutate(rn = row_number()) %>% 
-    pivot_wider(names_from = 2, values_from = 1) %>% 
-    select(-1) %>% 
-    st(
-      title = as.character(amb.tidy[i]),
-      summ = list(c('notNA(x)', 'mean(x)', 'sd(x)', 'min(x)', 'max(x)', 'cv(x)')),
-      summ.names = list(c('N', 'Media', 'D.E.', 'Min', 'Max', 'C.V.')),
-      out = 'csv',
-      file = paste('figuras/cuadros/csv/par_yr/cuadro_', colnames(amb.tidy[i]), '.csv', sep = '')
-    )
+cre <- function(x, n) {
+    lapply(colnames(x)[-c((length(colnames(x))-3):length(colnames(x)))], function (i) {
+      x %>% select(i, año) %>% 
+        group_by(año) %>% 
+        mutate(rn = row_number()) %>% 
+        pivot_wider(names_from = 2, values_from = 1) %>% 
+        select(-1) %>% 
+      st(
+        title = paste('Cuadro de resumen estadístico:', i),
+        summ = list(c('notNA(x)', 'mean(x)', 'sd(x)', 'min(x)', 'max(x)', '(sd(x, na.rm = T)/mean(x, na.rm = T)*100)')),
+        summ.names = list(c('N', 'Media', 'D.E.', 'Min', 'Max', 'C.V.')),
+        out = 'csv',
+        file = paste('figuras/cuadros/csv/', n, '/resumen_', n, '_', i, '.csv', sep = '') 
+      )
+    })
 }
 
-# por parámetro, por año, en formato html
-for (i in 1:45) {
-  amb.tidy %>%
-    select(i, año) %>%
-    group_by(año) %>% 
-    mutate(rn = row_number()) %>% 
-    pivot_wider(names_from = 2, values_from = 1) %>% 
-    select(-1) %>% 
-    st(
-      title = colnames(amb.tidy[i]),
-      summ = list(c('notNA(x)', 'mean(x)', 'sd(x)', 'min(x)', 'max(x)', 'cv(x)')),
-      summ.names = list(c('N', 'Media', 'D.E.', 'Min', 'Max', 'C.V.')),
-      out = 'htmlreturn',
-      file = paste('figuras/cuadros/html/par_yr/cuadro_', colnames(amb.tidy[i]), sep = '')
-    )
-}
+cre(caji_amb_tidy, 'caji')
+cre(lerma_amb_tidy, 'lerma')
+cre(zapo_amb_tidy, 'zapo')
+cre(verde_amb_tidy, 'verde')
+cre(santi_amb_tidy, 'santi')
 
-#### Gráficos de series temporales ####
+# Gráficos de series temporales ----
 # Gráfico de series temporales, localidades completas, agrupados por parámetro
-ggplot(data = amb.rect.fij) +
-  geom_line(mapping = aes(x = fecha, 
-                          y = valor, 
-                          color = idPuntoMuestreo)) +
-  facet_wrap(~ idParametro, scales = 'free')
-
-# Gráfico anterior, considerando sólo estaciones fijas
-ggplot(data = amb.rect.fij %>% 
-         filter(est_fijas == T)) +
-  geom_line(mapping = aes(x = fecha, 
-                          y = valor, 
-                          color = idPuntoMuestreo)) +
-  facet_wrap(~ idParametro, scales = 'free')
-
-# Mismo gráfico, facets paginados
-for (i in 1:5) {
-  print(
-    ggplot(data = amb.rect.fij %>% 
-             filter(est_fijas == T)) +
-      geom_line(mapping = aes(x = fecha, 
-                              y = valor, 
-                              color = idPuntoMuestreo)) +
-      facet_wrap_paginate(~ idParametro, scales = 'free', nrow = 3, ncol = 3, page = i)
-    )
+gst_wrap <- function(n) {
+  ggplot(data = get(paste(n, '_amb_rect', sep = ''))) +
+    geom_line(mapping = aes(x = fecha, 
+                            y = valor, 
+                            color = est)) +
+    facet_wrap(~ parámetro, scales = 'free')
 }
 
-#### Matriz de correlaciones ####
+lapply(nom, gst_wrap)
+
+# Matriz de correlaciones (Laguna de Cajititlán)----
 # para identificar posibles variables redundantes
 
-amb.tidy.cor <- cor(amb.tidy[,1:45], use = 'pairwise.complete.obs') # matriz de correlación
+caji_amb_tidy_cor <- cor(caji_amb_tidy[,1:45], use = 'pairwise.complete.obs') # matriz de correlación
 
-corrplot(amb.tidy.cor, type = 'upper', 
+corrplot(caji_amb_tidy_cor, type = 'upper', 
          col = brewer.pal(n = 8, name = 'RdYlBu'))
 
-# Aisalar esas variables
-amb.tidy.cor.cured <- amb.tidy %>% 
+# Aislar esas variables
+caji_amb_tidy_cor_cured <- caji_amb_tidy %>% 
   select(Conductividad, `Alcalinidad total`, `Cloruros totales`, `Nitrógeno total`, 
          `Nitrógeno total Kjeldahl`, SST, Sodio, `Sólidos disueltos tot.`, `Sólidos totales`, 
          `Fósforo total`) %>% 
   cor(use = 'pairwise.complete.obs')
 
-corrplot(amb.tidy.cor.cured, type = 'upper', 
+corrplot(caji_amb_tidy_cor_cured, type = 'upper', 
          col = brewer.pal(n = 8, name = 'RdYlBu'))
 
-#### Series temporales del coeficiente de variación ####
+# Series temporales del coeficiente de variación (Laguna de Cajititlán) ----
 # Coeficiente de variación por año
-amb.tidy.cv.a <- amb.tidy %>% 
-  filter(est_fijas == T) %>% 
+caji_amb_tidy_cv_a <- caji_amb_tidy %>%
   group_by(año) %>% 
   summarise(across(
     Temperatura:`Materia flotante`, 
     cv))
 
-for (i in colnames(amb.tidy.cv.a[2:46])) {
+for (i in colnames(caji_amb_tidy_cv_a[2:46])) {
   ggsave(paste('figuras/cov/año/', i, '_cov.png', sep = ''), 
          plot = 
-           ggplot(data = amb.tidy.cv.a) + 
+           ggplot(data = caji_amb_tidy_cv_a) + 
            geom_line(mapping = aes(x = año, 
                                    y = .data[[i]], 
                                    group = 1)) +
@@ -244,17 +209,16 @@ for (i in colnames(amb.tidy.cv.a[2:46])) {
 }
 
 # Coeficiente de variación por año y mes (fecha)
-amb.tidy.cv.am <- amb.tidy %>% 
-  filter(est_fijas == T) %>% 
+caji_amb_tidy_cv_am <- caji_amb_tidy %>% 
   group_by(fecha) %>% 
   summarise(across(
     Temperatura:`Materia flotante`,
     cv))
 
-for (i in colnames(amb.tidy.cv.am[2:46])) {
+for (i in colnames(caji_amb_tidy_cv_am[2:46])) {
   ggsave(paste('figuras/cov/año+mes/', i, '_cov_am.png', sep = ''), 
        plot = 
-         ggplot(data = amb.tidy.cv.am) + 
+         ggplot(data = caji_amb_tidy_cv_am) + 
          geom_line(mapping = aes(x = fecha, y = .data[[i]], group = 1)) +
          labs(title = paste(i, '(coeficiente de variación)'),
               x = 'fecha', y = 'COV') +
@@ -265,50 +229,41 @@ for (i in colnames(amb.tidy.cv.am[2:46])) {
        )
 }
 
-# Coeficiente de variación por estación y año
-amb.tidy.cv.ea <- amb.tidy %>% 
-  filter(est_fijas == T) %>% 
-  group_by(año, est) %>% 
-  summarise(across(
-    Temperatura:`Materia flotante`,
-    cv))
-# 2020 sólo tiene una observación, por lo que no se puede evaluar cv() para ese año
-
-#### SIMPROF y coherence plots ####
+# SIMPROF y coherence plots (Laguna de Cajititlán) ----
 # estandarizar media = 0, varianza = 1
-amb.tidy.stm <- amb.tidy %>%
+caji_amb_tidy_stm <- amb.tidy %>%
   mutate(across(Temperatura:Clorofilas, # "across()" no permite evaluar argumentos ...
                 ~decostand(., method = 'standardize', na.rm = T))) # ...se debe usar función anónima "~"
 
 # Matriz de correlación (Pearson)
-amb.tidy.stm.cor <- as_tibble(cor(amb.tidy.stm[1:44],
+caji_amb_tidy_stm_cor <- as_tibble(cor(caji_amb_tidy_stm[1:44],
                                   method = 'pearson',
                                   use = 'pairwise.complete.obs'))
 
 # SIMPROF
-amb.tidy.simprof <- simprof(amb.tidy.stm.cor,
+caji_amb_tidy_simprof <- simprof(caji_amb_tidy_stm_cor,
                             sample.orientation = 'column',
                             method.cluster = 'average',
                             num.expected = 1000,
                             num.simulated = 999,
                             alpha = 0.05)
 
-simprof.plot(amb.tidy.simprof)
+simprof_plot(amb_tidy_simprof)
 
 # Coherence plots  
 
 coh_plot <- function(i) {
-  col.vec <- scales::hue_pal()(sum(lengths(i))) 
+  col_vec <- scales::hue_pal()(sum(lengths(i))) 
   names(col.vec) <- unlist(i)
   ggsave(paste('figuras/coherence/cohplot_', paste(i, collapse = '_'), '.png', sep = ''), 
          plot = 
-           ggplot(data = amb.tidy.stm, aes(x = fecha)) +
+           ggplot(data = caji_amb_tidy_stm, aes(x = fecha)) +
            lapply(i, function(x) {
              geom_line(aes(y = .data[[x]], color = x))
            }) +
            scale_color_manual(name = 'Parámetro', values = col.vec) +
            labs(title = paste(i, collapse = ", "),
-                x = "fecha", y = "valor") +
+                x = 'fecha', y = 'valor') +
            theme_classic() +
            theme(plot.title = element_textbox_simple(halign = 0.5, margin = unit(c(5, 0, 5, 0), 'pt'))),
          width = 1920, height = 1080, units = 'px', pointsize = 12,
@@ -316,45 +271,20 @@ coh_plot <- function(i) {
          )
 }
 
-lapply(amb.tidy.simprof$significantclusters, coh_plot)
+lapply(caji_amb_tidy_simprof$significantclusters, coh_plot)
 
 #### test de Mantel
 # Matriz de correlación (Pearson)
-amb.tidy.stm.cor <- as_tibble(cor(amb.tidy.stm[1:44], use = 'complete.obs'))
-noc <- amb.tidy.stm.cor %>% 
+caji_amb_tidy_stm_cor <- as_tibble(cor(caji_amb_tidy_stm[1:44], use = 'complete.obs'))
+noc <- caji_amb_tidy_stm_cor %>% 
   select(-c(15, 22, 29, 33)) %>% 
   slice(-c(15, 22, 29, 33))
 
 # Distancia euclidiana
-amb.tidy.stm.euc <- as_tibble(as.matrix((dist(c, method = 'euclidean')))) 
-noc2 <- amb.tidy.stm.euc %>% 
+caji_amb_tidy_stm_euc <- as_tibble(as.matrix((dist(c, method = 'euclidean')))) 
+noc2 <- caji_amb_tidy_stm_euc %>% 
   select(-c(15, 22, 29, 33)) %>% 
   slice(-c(15, 22, 29, 33))
 
 # test de Mantel
 mantel(xdis = as.dist(noc), ydis = as.dist(noc2), method = 'spearman', permutations = 999)
-
-#### Proporción TN:TP ####
-# Proporción de Nitrógeno total/Fósforo total
-amb.tidy.tntp <- amb.tidy %>% 
-  mutate(`TN:TP` = `Nitrógeno total`/`Fósforo total`) %>% 
-  relocate(`TN:TP`, .after = `Materia flotante`)
-
-# Series temporales
-ggplot(data = amb.tidy.tntp) +
-  geom_line(aes(x = fecha, 
-                y = `TN:TP`)) +
-  theme_classic()
-
-# Resumen por mes (histórico) 
-ggplot(data = amb.tidy.tntp) +
-  geom_boxplot(aes(x = mes, 
-                   y = `TN:TP`)) +
-  theme_classic()
-
-# Resumen por mes (2022)
-ggplot(data = amb.tidy.tntp %>% 
-         filter(año == 2022)) +
-  geom_boxplot(aes(x = mes, 
-                   y = `TN:TP`)) +
-  theme_classic()
