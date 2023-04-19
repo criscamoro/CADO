@@ -2,9 +2,9 @@
 
 # Argumentos para la función ----
 caji <- c("https://www.ceajalisco.gob.mx/contenido/datos_abiertos/LagunaCajititlan.xlsx", "Laguna de Cajititlán", "Puntos de Muestreo")
-lerma <- c("https://www.ceajalisco.gob.mx/contenido/datos_abiertos/RioZula-Lerma.xlsx", "Río Zula-Lerma", "Puntos de Muestro")
 zapo <- c("https://www.ceajalisco.gob.mx/contenido/datos_abiertos/LagunaZapotlan.xlsx", "Laguna Zapotlán", "Puntos de Muestreo")
 verde <- c("https://www.ceajalisco.gob.mx/contenido/datos_abiertos/RioVerde.xlsx", "Río Verde", "Puntos de Muestreo")
+lerma <- c("https://www.ceajalisco.gob.mx/contenido/datos_abiertos/RioZula-Lerma.xlsx", "Río Zula-Lerma", "Puntos de Muestro")
 santi <- c("https://www.ceajalisco.gob.mx/contenido/datos_abiertos/RioSantiago.xlsx", "Río Santiago", "Puntos de Muestro")
 
 # Función para procesar los datos ----
@@ -45,21 +45,21 @@ data_process <- function(x) {
     mutate(mes = as.factor(month(fecha))) %>%
     relocate(est, .after = mes) %>%
     relocate(fecha, .before = año)
-  assign(paste(deparse(substitute(x)), "amb_tidy", sep = "_"), datos_amb, .GlobalEnv)
+  assign(paste(deparse(substitute(x)), "_amb_tidy", sep = ""), datos_amb, .GlobalEnv)
 }
 
 # Cargar datos en el Global Enviroment ----
 
 data_process(caji)
-data_process(lerma)
 data_process(zapo)
 data_process(verde)
+data_process(lerma)
 data_process(santi)
 
 # Guardar objetos en RDS ----
 
 saveRDS(caji_amb_tidy, "datos/tidy/caji_amb_tidy.rds")
-saveRDS(lerma_amb_tidy, "datos/tidy/lerma_amb_tidy.rds")
 saveRDS(zapo_amb_tidy, "datos/tidy/zapo_amb_tidy.rds")
 saveRDS(verde_amb_tidy, "datos/tidy/verde_amb_tidy.rds")
+saveRDS(lerma_amb_tidy, "datos/tidy/lerma_amb_tidy.rds")
 saveRDS(santi_amb_tidy, "datos/tidy/santi_amb_tidy.rds")

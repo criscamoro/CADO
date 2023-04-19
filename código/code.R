@@ -149,15 +149,15 @@ cre <- function(x, n) {
         summ = list(c("notNA(x)", "mean(x)", "sd(x)", "min(x)", "max(x)", "(sd(x, na.rm = T)/mean(x, na.rm = T) * 100)")),
         summ.names = list(c("N", "Media", "D.E.", "Min", "Max", "C.V.")),
         out = "csv",
-        file = paste("figuras/cuadros/csv/", n, "/resumen_", n, "_", i, ".csv", sep = "")
+        file = paste("figuras/cuadros/", n, "/resumen_", n, "_", i, ".csv", sep = "")
       )
   })
 }
 
 cre(caji_amb_tidy, "caji")
-cre(lerma_amb_tidy, "lerma")
 cre(zapo_amb_tidy, "zapo")
 cre(verde_amb_tidy, "verde")
+cre(lerma_amb_tidy, "lerma")
 cre(santi_amb_tidy, "santi")
 
 # Gráficos de series temporales ----
