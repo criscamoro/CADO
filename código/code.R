@@ -16,31 +16,35 @@ library(clustsig)
 #### Preparación de datos ####
 # Datos ambientales ----
 # Nombres
-nom <- c('caji', # Laguna de Cajititlán
-         'zapo', # Laguna de Zapotlán
-         'verde', # Río Verde
-         'lerma', # Río Zula-Lerma
-         'santi') # Río Santiago
+nom <- c(
+  "caji", # Laguna de Cajititlán
+  "zapo", # Laguna de Zapotlán
+  "verde", # Río Verde
+  "lerma", # Río Zula-Lerma
+  "santi" # Río Santiago
+) 
 
 # Actualizar datos
-source('código/get_data.R')
+source("código/get_data.R")
 
 # Cargar datos en el Global Enviroment
 datos <- function(n) {
-  assign(x = paste(n, '_amb_tidy', sep = ''), 
-         value = readRDS(paste('datos/tidy/', n, '_amb_tidy.rds', sep = '')),
-         envir = .GlobalEnv)
+  assign(
+    paste(n, "_amb_tidy", sep = ""),
+    readRDS(paste("datos/tidy/", n, "_amb_tidy.rds", sep = "")),
+    .GlobalEnv
+  )
 }
 
 lapply(nom, datos)
-  
+
 # Guardar datos como csv
 guardar_csv <- function(n) {
   write.csv(
-    x = get(paste(n, '_amb_tidy', sep = '')),
-    file = paste('datos/tidy/', n, '_amb_tidy.csv', sep = ''),
-    na = ''
-    )
+    get(paste(n, "_amb_tidy", sep = "")),
+    paste("datos/tidy/", n, "_amb_tidy.csv", sep = ""),
+    na = ""
+  )
 }
 
 lapply(nom, guardar_csv)
@@ -48,15 +52,15 @@ lapply(nom, guardar_csv)
 # Formato rectangular (key-value)
 guardar_rect <- function(n) {
   write.csv(
-    x = get(paste(n, '_amb_tidy', sep = '')) %>% 
+    get(paste(n, "_amb_tidy", sep = "")) %>%
       pivot_longer(
         cols = !c(fecha, año, mes, est),
-        names_to = 'parámetro',
-        values_to = 'valor'
+        names_to = "parámetro",
+        values_to = "valor"
       ),
-    file = paste('datos/rectangulares/', n, '_amb_rect.csv', sep = ''),
-    row.names = F, 
-    na = ''
+    paste("datos/rectangulares/", n, "_amb_rect.csv", sep = ""),
+    row.names = F,
+    na = ""
   )
 }
 
@@ -65,9 +69,10 @@ lapply(nom, guardar_rect)
 # Cargar datos rectangulares en el Global Enviroment
 datos_rect <- function(n) {
   assign(
-    x = paste(n, '_amb_rect', sep = ''),
-    value = read_csv(paste('datos/rectangulares/', n, '_amb_rect.csv', sep = '')),
-    envir = .GlobalEnv)
+    paste(n, "_amb_rect", sep = ""),
+    read_csv(paste("datos/rectangulares/", n, "_amb_rect.csv", sep = "")),
+    .GlobalEnv
+  )
 }
 
 lapply(nom, datos_rect)
@@ -75,93 +80,96 @@ lapply(nom, datos_rect)
 # Zooplancton de la Laguna de Cajititlán ----
 # Base de datos de zooplancton formato tidy
 write.csv(
-  x = as_tibble(read.xlsx('datos/crudos/Cajititlán_Bio.xlsx', sheet = 'ZooP', colNames = F, startRow = 3)) %>%
-    slice(-8) %>% 
-    column_to_rownames('X1') %>% t, 
-  file = 'datos/tidy/caji_zoo_tidy.csv', 
+  as_tibble(read.xlsx("datos/crudos/Cajititlán_Bio.xlsx", sheet = "ZooP", colNames = F, startRow = 3)) %>%
+    slice(-8) %>%
+    column_to_rownames("X1") %>% t(),
+  "datos/tidy/caji_zoo_tidy.csv",
   row.names = F,
-  na = '0'
-  )
+  na = "0"
+)
 
-caji_zoo_tidy <- read_csv('datos/tidy/caji_zoo_tidy.csv')
+caji_zoo_tidy <- read_csv("datos/tidy/caji_zoo_tidy.csv")
 
 # Base de datos de zooplancton rectangular (key-value)
 write.csv(
-  x = caji_zoo_tidy %>% 
+  caji_zoo_tidy %>%
     pivot_longer(
       cols = !c(mes, est),
-      names_to = 'taxa',
-      values_to = 'conteo'
+      names_to = "taxa",
+      values_to = "conteo"
     ),
-  file = 'datos/rectangulares/caji_zoo_rect.csv',
+  "datos/rectangulares/caji_zoo_rect.csv",
   row.names = F,
-  na = '0'
-  )
+  na = "0"
+)
 
-caji_zoo_rect <- read_csv('datos/rectangulares/caji_zoo_rect.csv')
+caji_zoo_rect <- read_csv("datos/rectangulares/caji_zoo_rect.csv")
 
 # Fitoplancton de la Laguna de Cajititlán ----
 # Base de datos de fitoplancton formato tidy
 write.csv(
-  x = as_tibble(read.xlsx('datos/crudos/Cajititlán_Bio.xlsx',  sheet = 'FitoP', colNames = F, startRow = 3, cols =  c(1:317))) %>% 
-    slice(-65) %>% 
-    column_to_rownames('X1') %>% t,
-  file = 'datos/tidy/caji_fito_tidy.csv',
+  as_tibble(read.xlsx("datos/crudos/Cajititlán_Bio.xlsx", sheet = "FitoP", colNames = F, startRow = 3, cols = c(1:317))) %>%
+    slice(-65) %>%
+    column_to_rownames("X1") %>% t(),
+  "datos/tidy/caji_fito_tidy.csv",
   row.names = F,
-  na = '0'
+  na = "0"
 )
 
-caji_fito_tidy <- read_csv('datos/tidy/caji_fito_tidy.csv')
+caji_fito_tidy <- read_csv("datos/tidy/caji_fito_tidy.csv")
 
 # Base de datos de fitoplancton rectangular (key-value)
 write.csv(
-  x = caji_fito_tidy %>% 
+  caji_fito_tidy %>%
     pivot_longer(
       cols = !c(año, mes, est),
-      names_to = 'taxa',
-      values_to = 'conteo'
+      names_to = "taxa",
+      values_to = "conteo"
     ),
-  file = 'datos/rectangulares/caji_fito_rect.csv',
+  "datos/rectangulares/caji_fito_rect.csv",
   row.names = F,
-  na = '0'
+  na = "0"
 )
 
-caji_fito_rect <- read_csv('datos/rectangulares/caji_fito_rect.csv')
+caji_fito_rect <- read_csv("datos/rectangulares/caji_fito_rect.csv")
 
 #### Análisis exploratorio ####
 # Cuadros de resumen estadístico ----
 # por parámetro, por año, en formato csv
 cre <- function(x, n) {
-    lapply(colnames(x)[-c((length(colnames(x))-3):length(colnames(x)))], function (i) {
-      x %>% select(i, año) %>% 
-        group_by(año) %>% 
-        mutate(rn = row_number()) %>% 
-        pivot_wider(names_from = 2, values_from = 1) %>% 
-        select(-1) %>% 
+  lapply(colnames(x)[-c((length(colnames(x)) - 3):length(colnames(x)))], function(i) {
+    x %>%
+      select(i, año) %>%
+      group_by(año) %>%
+      mutate(rn = row_number()) %>%
+      pivot_wider(names_from = 2, values_from = 1) %>%
+      select(-1) %>%
       st(
-        title = paste('Cuadro de resumen estadístico:', i),
-        summ = list(c('notNA(x)', 'mean(x)', 'sd(x)', 'min(x)', 'max(x)', '(sd(x, na.rm = T)/mean(x, na.rm = T)*100)')),
-        summ.names = list(c('N', 'Media', 'D.E.', 'Min', 'Max', 'C.V.')),
-        out = 'csv',
-        file = paste('figuras/cuadros/csv/', n, '/resumen_', n, '_', i, '.csv', sep = '') 
+        title = paste("Cuadro de resumen estadístico:", i),
+        summ = list(c("notNA(x)", "mean(x)", "sd(x)", "min(x)", "max(x)", "(sd(x, na.rm = T)/mean(x, na.rm = T) * 100)")),
+        summ.names = list(c("N", "Media", "D.E.", "Min", "Max", "C.V.")),
+        out = "csv",
+        file = paste("figuras/cuadros/csv/", n, "/resumen_", n, "_", i, ".csv", sep = "")
       )
-    })
+  })
 }
 
-cre(caji_amb_tidy, 'caji')
-cre(lerma_amb_tidy, 'lerma')
-cre(zapo_amb_tidy, 'zapo')
-cre(verde_amb_tidy, 'verde')
-cre(santi_amb_tidy, 'santi')
+cre(caji_amb_tidy, "caji")
+cre(lerma_amb_tidy, "lerma")
+cre(zapo_amb_tidy, "zapo")
+cre(verde_amb_tidy, "verde")
+cre(santi_amb_tidy, "santi")
 
 # Gráficos de series temporales ----
 # Gráfico de series temporales, localidades completas, agrupados por parámetro
 gst_wrap <- function(n) {
-  ggplot(data = get(paste(n, '_amb_rect', sep = ''))) +
-    geom_line(mapping = aes(x = fecha, 
-                            y = valor, 
-                            color = est)) +
-    facet_wrap(~ parámetro, scales = 'free')
+  ggplot(data = get(paste(n, "_amb_rect", sep = ""))) +
+    geom_line(mapping = aes(
+      x = fecha,
+      y = valor,
+      color = est
+    )) +
+    facet_wrap(~parámetro, scales = "free")
 }
 
 lapply(nom, gst_wrap)
@@ -169,122 +177,146 @@ lapply(nom, gst_wrap)
 # Matriz de correlaciones (Laguna de Cajititlán)----
 # para identificar posibles variables redundantes
 
-caji_amb_tidy_cor <- cor(caji_amb_tidy[,1:45], use = 'pairwise.complete.obs') # matriz de correlación
+caji_amb_tidy_cor <- cor(caji_amb_tidy[, 1:45], use = "pairwise.complete.obs") # matriz de correlación
 
-corrplot(caji_amb_tidy_cor, type = 'upper', 
-         col = brewer.pal(n = 8, name = 'RdYlBu'))
+corrplot(caji_amb_tidy_cor,
+  type = "upper",
+  col = brewer.pal(n = 8, name = "RdYlBu")
+)
 
 # Aislar esas variables
-caji_amb_tidy_cor_cured <- caji_amb_tidy %>% 
-  select(Conductividad, `Alcalinidad total`, `Cloruros totales`, `Nitrógeno total`, 
-         `Nitrógeno total Kjeldahl`, SST, Sodio, `Sólidos disueltos tot.`, `Sólidos totales`, 
-         `Fósforo total`) %>% 
-  cor(use = 'pairwise.complete.obs')
+caji_amb_tidy_cor_cured <- caji_amb_tidy %>%
+  select(
+    Conductividad, `Alcalinidad total`, `Cloruros totales`, `Nitrógeno total`,
+    `Nitrógeno total Kjeldahl`, SST, Sodio, `Sólidos disueltos tot.`, `Sólidos totales`,
+    `Fósforo total`
+  ) %>%
+  cor(use = "pairwise.complete.obs")
 
-corrplot(caji_amb_tidy_cor_cured, type = 'upper', 
-         col = brewer.pal(n = 8, name = 'RdYlBu'))
+corrplot(caji_amb_tidy_cor_cured,
+  type = "upper",
+  col = brewer.pal(n = 8, name = "RdYlBu")
+)
 
 # Series temporales del coeficiente de variación (Laguna de Cajititlán) ----
 # Coeficiente de variación por año
+cdv <- function(x) {
+  (sd(x, na.rm = T) / mean(x, na.rm = T) * 100)
+}
+
 caji_amb_tidy_cv_a <- caji_amb_tidy %>%
-  group_by(año) %>% 
+  group_by(año) %>%
   summarise(across(
-    Temperatura:`Materia flotante`, 
-    cv))
+    Temperatura:`Materia flotante`,
+    cdv
+  ))
 
 for (i in colnames(caji_amb_tidy_cv_a[2:46])) {
-  ggsave(paste('figuras/cov/año/', i, '_cov.png', sep = ''), 
-         plot = 
-           ggplot(data = caji_amb_tidy_cv_a) + 
-           geom_line(mapping = aes(x = año, 
-                                   y = .data[[i]], 
-                                   group = 1)) +
-           labs(title = paste(i, '(coeficiente de variación)'),
-                y = 'COV') +
-           theme(plot.title = element_text(hjust = 0.5)) +
-           theme_classic(),
-         width = 1920, height = 1080, units = 'px', pointsize = 12, 
-         bg = 'white',dpi = 300
-         )
+  ggsave(paste("figuras/cov/año/", i, "_cov.png", sep = ""),
+    plot =
+      ggplot(data = caji_amb_tidy_cv_a) +
+        geom_line(mapping = aes(
+          x = año,
+          y = .data[[i]],
+          group = 1
+        )) +
+        labs(
+          title = paste(i, "(coeficiente de variación)"),
+          y = "COV"
+        ) +
+        theme(plot.title = element_text(hjust = 0.5)) +
+        theme_classic(),
+    width = 1920, height = 1080, units = "px", pointsize = 12,
+    bg = "white", dpi = 300
+  )
 }
 
 # Coeficiente de variación por año y mes (fecha)
-caji_amb_tidy_cv_am <- caji_amb_tidy %>% 
-  group_by(fecha) %>% 
+caji_amb_tidy_cv_am <- caji_amb_tidy %>%
+  group_by(fecha) %>%
   summarise(across(
     Temperatura:`Materia flotante`,
-    cv))
+    cdv
+  ))
 
 for (i in colnames(caji_amb_tidy_cv_am[2:46])) {
-  ggsave(paste('figuras/cov/año+mes/', i, '_cov_am.png', sep = ''), 
-       plot = 
-         ggplot(data = caji_amb_tidy_cv_am) + 
-         geom_line(mapping = aes(x = fecha, y = .data[[i]], group = 1)) +
-         labs(title = paste(i, '(coeficiente de variación)'),
-              x = 'fecha', y = 'COV') +
-         theme(plot.title = element_text(hjust = 0.5)) +
-         theme_classic(),
-       width = 1920, height = 1080, units = 'px', pointsize = 12, 
-       bg = 'white',dpi = 300
-       )
+  ggsave(paste("figuras/cov/año+mes/", i, "_cov_am.png", sep = ""),
+    plot =
+      ggplot(data = caji_amb_tidy_cv_am) +
+        geom_line(mapping = aes(x = fecha, y = .data[[i]], group = 1)) +
+        labs(
+          title = paste(i, "(coeficiente de variación)"),
+          x = "fecha", y = "COV"
+        ) +
+        theme(plot.title = element_text(hjust = 0.5)) +
+        theme_classic(),
+    width = 1920, height = 1080, units = "px", pointsize = 12,
+    bg = "white", dpi = 300
+  )
 }
 
 # SIMPROF y coherence plots (Laguna de Cajititlán) ----
 # estandarizar media = 0, varianza = 1
 caji_amb_tidy_stm <- amb.tidy %>%
-  mutate(across(Temperatura:Clorofilas, # "across()" no permite evaluar argumentos ...
-                ~decostand(., method = 'standardize', na.rm = T))) # ...se debe usar función anónima "~"
+  mutate(across(
+    Temperatura:Clorofilas, # "across()" no permite evaluar argumentos ...
+    ~ decostand(., method = "standardize", na.rm = T) # ...se debe usar función anónima "~"
+  )) 
 
 # Matriz de correlación (Pearson)
 caji_amb_tidy_stm_cor <- as_tibble(cor(caji_amb_tidy_stm[1:44],
-                                  method = 'pearson',
-                                  use = 'pairwise.complete.obs'))
+  method = "pearson",
+  use = "pairwise.complete.obs"
+))
 
 # SIMPROF
 caji_amb_tidy_simprof <- simprof(caji_amb_tidy_stm_cor,
-                            sample.orientation = 'column',
-                            method.cluster = 'average',
-                            num.expected = 1000,
-                            num.simulated = 999,
-                            alpha = 0.05)
+  sample.orientation = "column",
+  method.cluster = "average",
+  num.expected = 1000,
+  num.simulated = 999,
+  alpha = 0.05
+)
 
 simprof_plot(amb_tidy_simprof)
 
-# Coherence plots  
+# Coherence plots
 
 coh_plot <- function(i) {
-  col_vec <- scales::hue_pal()(sum(lengths(i))) 
+  col_vec <- scales::hue_pal()(sum(lengths(i)))
   names(col.vec) <- unlist(i)
-  ggsave(paste('figuras/coherence/cohplot_', paste(i, collapse = '_'), '.png', sep = ''), 
-         plot = 
-           ggplot(data = caji_amb_tidy_stm, aes(x = fecha)) +
-           lapply(i, function(x) {
-             geom_line(aes(y = .data[[x]], color = x))
-           }) +
-           scale_color_manual(name = 'Parámetro', values = col.vec) +
-           labs(title = paste(i, collapse = ", "),
-                x = 'fecha', y = 'valor') +
-           theme_classic() +
-           theme(plot.title = element_textbox_simple(halign = 0.5, margin = unit(c(5, 0, 5, 0), 'pt'))),
-         width = 1920, height = 1080, units = 'px', pointsize = 12,
-         bg = 'white',dpi = 300
-         )
+  ggsave(paste("figuras/coherence/cohplot_", paste(i, collapse = "_"), ".png", sep = ""),
+    plot =
+      ggplot(data = caji_amb_tidy_stm, aes(x = fecha)) +
+        lapply(i, function(x) {
+          geom_line(aes(y = .data[[x]], color = x))
+        }) +
+        scale_color_manual(name = "Parámetro", values = col.vec) +
+        labs(
+          title = paste(i, collapse = ", "),
+          x = "fecha", y = "valor"
+        ) +
+        theme_classic() +
+        theme(plot.title = element_textbox_simple(halign = 0.5, margin = unit(c(5, 0, 5, 0), "pt"))),
+    width = 1920, height = 1080, units = "px", pointsize = 12,
+    bg = "white", dpi = 300
+  )
 }
 
 lapply(caji_amb_tidy_simprof$significantclusters, coh_plot)
 
 #### test de Mantel
 # Matriz de correlación (Pearson)
-caji_amb_tidy_stm_cor <- as_tibble(cor(caji_amb_tidy_stm[1:44], use = 'complete.obs'))
-noc <- caji_amb_tidy_stm_cor %>% 
-  select(-c(15, 22, 29, 33)) %>% 
+caji_amb_tidy_stm_cor <- as_tibble(cor(caji_amb_tidy_stm[1:44], use = "complete.obs"))
+noc <- caji_amb_tidy_stm_cor %>%
+  select(-c(15, 22, 29, 33)) %>%
   slice(-c(15, 22, 29, 33))
 
 # Distancia euclidiana
-caji_amb_tidy_stm_euc <- as_tibble(as.matrix((dist(c, method = 'euclidean')))) 
-noc2 <- caji_amb_tidy_stm_euc %>% 
-  select(-c(15, 22, 29, 33)) %>% 
+caji_amb_tidy_stm_euc <- as_tibble(as.matrix((dist(c, method = "euclidean"))))
+noc2 <- caji_amb_tidy_stm_euc %>%
+  select(-c(15, 22, 29, 33)) %>%
   slice(-c(15, 22, 29, 33))
 
 # test de Mantel
-mantel(xdis = as.dist(noc), ydis = as.dist(noc2), method = 'spearman', permutations = 999)
+mantel(xdis = as.dist(noc), ydis = as.dist(noc2), method = "spearman", permutations = 999)
