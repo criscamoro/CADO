@@ -133,6 +133,15 @@ write.csv(
 
 caji_fito_rect <- read_csv("datos/rectangulares/caji_fito_rect.csv")
 
+# Información taxonómica
+write.csv(
+  as_tibble(read.xlsx("datos/crudos/Cajititlán_Bio.xlsx", sheet = "FitoT")),
+  "datos/tidy/caji_fito_taxo.csv", 
+  row.names = F
+)
+
+caji_fito_taxo <- read_csv("datos/tidy/caji_fito_taxo.csv")
+
 #### Análisis exploratorio ####
 # Cuadros de resumen estadístico ----
 # por parámetro, por año, en formato csv
@@ -320,3 +329,5 @@ noc2 <- caji_amb_tidy_stm_euc %>%
 
 # test de Mantel
 mantel(xdis = as.dist(noc), ydis = as.dist(noc2), method = "spearman", permutations = 999)
+
+# Análisis del fitoplancton (Laguna de Cajititlán)
