@@ -81,7 +81,6 @@ lapply(nom, datos_rect)
 # Base de datos de zooplancton formato tidy
 write.csv(
   as_tibble(read.xlsx("datos/crudos/Cajititlán_Bio.xlsx", sheet = "ZooP", colNames = F, startRow = 3)) %>%
-    slice(-8) %>%
     column_to_rownames("X1") %>% t(),
   "datos/tidy/caji_zoo_tidy.csv",
   row.names = F,
@@ -94,7 +93,7 @@ caji_zoo_tidy <- read_csv("datos/tidy/caji_zoo_tidy.csv")
 write.csv(
   caji_zoo_tidy %>%
     pivot_longer(
-      cols = !c(mes, est),
+      cols = !c(año, mes, est),
       names_to = "taxa",
       values_to = "conteo"
     ),
@@ -330,4 +329,11 @@ noc2 <- caji_amb_tidy_stm_euc %>%
 # test de Mantel
 mantel(xdis = as.dist(noc), ydis = as.dist(noc2), method = "spearman", permutations = 999)
 
-# Análisis del fitoplancton (Laguna de Cajititlán)
+# Análisis del fitoplancton (Laguna de Cajititlán) ----
+# Gráfico de series temporales por especie
+ggplot(data = caji_fito_rect) +
+  geom_line(mapping = aes(
+    x = año,
+    y = conteo
+  )) +
+  facet_wrap(~taxa)
