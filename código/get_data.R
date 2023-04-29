@@ -56,10 +56,10 @@ data_process(verde)
 data_process(lerma)
 data_process(santi)
 
-# Guardar objetos en RDS ----
+# Guardar como csv ----
 
-saveRDS(caji_amb_tidy, "datos/tidy/caji_amb_tidy.rds")
-saveRDS(zapo_amb_tidy, "datos/tidy/zapo_amb_tidy.rds")
-saveRDS(verde_amb_tidy, "datos/tidy/verde_amb_tidy.rds")
-saveRDS(lerma_amb_tidy, "datos/tidy/lerma_amb_tidy.rds")
-saveRDS(santi_amb_tidy, "datos/tidy/santi_amb_tidy.rds")
+write.csv(caji_amb_tidy, "datos/tidy/caji_amb_tidy.rds", na = "")
+write.csv(zapo_amb_tidy, "datos/tidy/zapo_amb_tidy.rds", na = "")
+write.csv(verde_amb_tidy, "datos/tidy/verde_amb_tidy.rds", na = "")
+write.csv(lerma_amb_tidy, "datos/tidy/lerma_amb_tidy.rds", na = "")
+write.csv(santi_amb_tidy, "datos/tidy/santi_amb_tidy.rds", na = "")

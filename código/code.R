@@ -31,23 +31,12 @@ source("código/get_data.R")
 datos <- function(n) {
   assign(
     paste(n, "_amb_tidy", sep = ""),
-    readRDS(paste("datos/tidy/", n, "_amb_tidy.rds", sep = "")),
+    read_csv(paste("datos/tidy/", n, "_amb_tidy.csv", sep = "")),
     .GlobalEnv
   )
 }
 
 lapply(nom, datos)
-
-# Guardar datos como csv
-guardar_csv <- function(n) {
-  write.csv(
-    get(paste(n, "_amb_tidy", sep = "")),
-    paste("datos/tidy/", n, "_amb_tidy.csv", sep = ""),
-    na = ""
-  )
-}
-
-lapply(nom, guardar_csv)
 
 # Formato rectangular (key-value)
 guardar_rect <- function(n) {
@@ -117,29 +106,34 @@ write.csv(
 
 caji_fito_tidy <- read_csv("datos/tidy/caji_fito_tidy.csv")
 
-# Base de datos de fitoplancton rectangular (key-value)
+# Información taxonómica
+write.csv(
+  as_tibble(read.xlsx("datos/crudos/Cajititlán_Bio.xlsx", sheet = "FitoT")),
+  "datos/crudos/caji_fito_taxo.csv", 
+  row.names = F
+)
+
+caji_fito_taxo <- read_csv("datos/crudos/caji_fito_taxo.csv")
+
+# Base de datos de fitoplancton rectangular (key-value), con datos taxonómicos
 write.csv(
   caji_fito_tidy %>%
     pivot_longer(
       cols = !c(año, mes, est),
       names_to = "taxa",
       values_to = "conteo"
-    ),
+    ) %>% 
+    mutate(Género = word(taxa, 1)) %>% 
+    left_join(caji_fito_taxo, by = "Género") %>% 
+    relocate(Género, .after = Familia) %>% 
+    relocate(taxa, .after = Género) %>% 
+    relocate(conteo, .after = taxa),
   "datos/rectangulares/caji_fito_rect.csv",
   row.names = F,
   na = "0"
 )
 
 caji_fito_rect <- read_csv("datos/rectangulares/caji_fito_rect.csv")
-
-# Información taxonómica
-write.csv(
-  as_tibble(read.xlsx("datos/crudos/Cajititlán_Bio.xlsx", sheet = "FitoT")),
-  "datos/tidy/caji_fito_taxo.csv", 
-  row.names = F
-)
-
-caji_fito_taxo <- read_csv("datos/tidy/caji_fito_taxo.csv")
 
 #### Análisis exploratorio ####
 # Cuadros de resumen estadístico ----
@@ -331,9 +325,15 @@ mantel(xdis = as.dist(noc), ydis = as.dist(noc2), method = "spearman", permutati
 
 # Análisis del fitoplancton (Laguna de Cajititlán) ----
 # Gráfico de series temporales por especie
+
 ggplot(data = caji_fito_rect) +
   geom_line(mapping = aes(
     x = año,
     y = conteo
   )) +
-  facet_wrap(~taxa)
+  facet_wrap(~taxa, scales = "free")
+
+# Cuadro de resumen de taxa (conteos, promedios, por taxa)
+# Gráfico de barras acumulado (?) de la abundancia relativa por resolución taxonómica, por fecha
+# Índices de Diversidad por taxa, por fecha (Sobs, H' y D')
+# Análisis multivariado (opcional)
