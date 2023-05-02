@@ -12,6 +12,7 @@ library(corrplot)
 library(vtable)
 library(vegan)
 library(clustsig)
+library(treemapify)
 
 #### Preparación de datos ####
 # Datos ambientales ----
@@ -96,9 +97,12 @@ caji_zoo_rect <- read_csv("datos/rectangulares/caji_zoo_rect.csv")
 # Fitoplancton de la Laguna de Cajititlán ----
 # Base de datos de fitoplancton formato tidy
 write.csv(
-  as_tibble(read.xlsx("datos/crudos/Cajititlán_Bio.xlsx", sheet = "FitoP", colNames = F, startRow = 3, cols = c(1:317))) %>%
+  read.xlsx("datos/crudos/Cajititlán_Bio.xlsx", sheet = "FitoP", colNames = F, startRow = 3, cols = c(1:317)) %>%
     slice(-65) %>%
-    column_to_rownames("X1") %>% t(),
+    column_to_rownames("X1") %>% 
+    t() %>% as_tibble() %>% 
+    mutate(fecha = make_date(año, mes)) %>% 
+    relocate(fecha, .before = año),
   "datos/tidy/caji_fito_tidy.csv",
   row.names = F,
   na = "0"
@@ -119,7 +123,7 @@ caji_fito_taxo <- read_csv("datos/crudos/caji_fito_taxo.csv")
 write.csv(
   caji_fito_tidy %>%
     pivot_longer(
-      cols = !c(año, mes, est),
+      cols = !c(fecha, año, mes, est),
       names_to = "taxa",
       values_to = "conteo"
     ) %>% 
@@ -333,7 +337,118 @@ ggplot(data = caji_fito_rect) +
   )) +
   facet_wrap(~taxa, scales = "free")
 
-# Cuadro de resumen de taxa (conteos, promedios, por taxa)
-# Gráfico de barras acumulado (?) de la abundancia relativa por resolución taxonómica, por fecha
-# Índices de Diversidad por taxa, por fecha (Sobs, H' y D')
-# Análisis multivariado (opcional)
+# Cuadro de resumen de taxa
+
+treemap <- function(id) {
+  ggplot(data = caji_fito_rect %>% 
+           group_by({{id}}) %>% 
+           summarise(conteo = sum(conteo)), 
+         aes(area = conteo, fill = {{id}},
+         label = paste({{id}}, conteo, sep = "\n"))) +
+    geom_treemap() +
+    geom_treemap_text(color = "white", place = "centre", size = 15)
+}
+treemap(Phylum)
+
+# Abundancia
+# absoluta
+ab_n <- function(periodo) {
+  ggplot(
+    data = caji_fito_rect %>% 
+      group_by({{periodo}}) %>% 
+      summarise(conteo = sum(conteo)),
+    aes(
+      x = {{periodo}},
+      y = conteo
+      )
+    ) +
+    geom_line() +
+    geom_point()
+}
+
+ab_n(año)
+
+# relativa
+ab_f <- function(id, periodo) {
+  ggplot(
+    data = caji_fito_rect %>% 
+      group_by({{periodo}}) %>% 
+      mutate(ni = (conteo/sum(conteo))*100),
+    aes(
+      x = {{periodo}},
+      y = ni,
+      fill = {{id}}
+    )
+  ) +
+    geom_bar(stat = "identity")
+}
+
+ab_f(Phylum, año)
+
+# Índices de Diversidad univariados por taxa, por fecha (Sobs, H' y D')
+# Sobs
+sobs_n <- function(periodo) {
+  ggplot(
+    data = caji_fito_rect %>% 
+      group_by({{periodo}}) %>% 
+      filter(conteo > 0) %>% 
+      summarise(S = length(unique(taxa))),
+    aes(
+      x = {{periodo}},
+      y = S
+    )
+  ) +
+    geom_line() +
+    geom_point()
+}
+
+sobs_n(fecha)
+sobs_n(año)  
+
+sobs_f <- function(periodo) {
+  ggplot(
+    data = caji_fito_rect %>% 
+      group_by({{periodo}}) %>% 
+      filter(conteo > 0) %>% 
+      distinct(taxa, .keep_all = T) %>% 
+      mutate(v_a = 1) %>% 
+      group_by({{periodo}}, Phylum) %>% 
+      summarise(v_a = sum(v_a)) %>% 
+      group_by({{periodo}}) %>% 
+      mutate(`%` = (v_a/sum(v_a))*100),
+    aes(
+      x = {{periodo}},
+      y = `%`, 
+      fill = Phylum
+    )
+  ) +
+    geom_bar(stat = "identity")
+}
+
+sobs_f(año)
+sobs_f(fecha)
+
+# Shannon
+shannon <- function(x) {
+  f <- (x[x > 0]/sum(x))
+  -sum(f * log(f, 2))
+}
+
+sh <- function(periodo) {
+  ggplot(
+    data = caji_fito_rect %>% 
+      group_by({{periodo}}, taxa) %>% 
+      summarise(conteo = sum(conteo)) %>% 
+      group_by({{periodo}}) %>% 
+      summarise(`H'` = shannon(conteo)),
+    aes(
+      x = {{periodo}},
+      y = `H'`
+    )
+  ) +
+    geom_line() +
+    geom_point()
+}
+
+sh(año)
+sh(fecha)
