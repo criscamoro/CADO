@@ -24,7 +24,7 @@ Se consideran los siguientes cuerpos de agua:
 Disponible como datos `crudos`, formato `rectangular` y formato `tidy`.  
 
 ### Para la Laguna de Cajititlán:  
--Variables biológicas: 
+-Variables biológicas:  
  -Grupos fitoplanctónicos  
  -Grupos zooplanctónicos (Diplostraca, Rotifera, Cyclopoida, Calanoida).    
 Disponible como datos `crudos`, formato`rectangular` y formato `tidy`.  
