@@ -1,4 +1,4 @@
-![Logo UdG](figuras/UDG.png) ![Logo ENES](figuras/ENES.png)
+![Logo UdG](figuras/banner.png)
 # Programa de monitoreo de la limnología de Cuerpos de Agua Dulce de Occidente de Jalisco
 
 Repositorio del programa de monitoreo de las características fisicoquímicas y biológicas de cuerpos de agua continentales de Jalisco por parte del *Instituto de Limnología* de la **Universidad de Guadalajara** en colaboración con la *Escuela Nacional de Estudios Superiores Unidad Mérida* de la **Universidad Nacional Autónoma de México**. Además, se emplean datos de calidad de agua de libre acceso proporcionados por la *Comisión Estatal del Agua en Jalisco*. 
