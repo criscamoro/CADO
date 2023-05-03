@@ -1,4 +1,6 @@
 # Programa de monitoreo de la limnología de Cuerpos de Agua Dulce de Occidente 
+# Instituto de Limnología, Centro Universitario de Ciencias Biológicas y Agropecuarias de la Universidad de Guadalajara
+# Cristofer Camarena Orozco (camarenaocristofer@gmail.com)
 
 #### Paquetes ####
 library(tidyverse)

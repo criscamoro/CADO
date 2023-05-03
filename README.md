@@ -1,16 +1,36 @@
-### Programa de monitoreo de la limnología de cuerpos de agua dulce de Occidente
+![Logo UdG](figuras/UDG.png) ![Logo ENES](figuras/ENES.png)
+# Programa de monitoreo de la limnología de Cuerpos de Agua Dulce de Occidente de Jalisco
 
-Repositorio del programa de monitoreo de las características fisicoquímicas de cuerpos de agua continentales de Jalisco por parte del *Laboratorio de Ecosistemas Marinos y Acuicultura* en colaboración con el *Instituto de Limnología* de la **Universidad de Guadalajara**; con el objetivo de evaluar el estado de estos cuerpos de agua como reservas para el suministro en comunidades aledañas, así como generar información básica para el estudio de poblaciones de organismos de interés.
+Repositorio del programa de monitoreo de las características fisicoquímicas y biológicas de cuerpos de agua continentales de Jalisco por parte del *Instituto de Limnología* de la **Universidad de Guadalajara** en colaboración con la *Escuela Nacional de Estudios Superiores Unidad Mérida* de la **Universidad Nacional Autónoma de México**. Además, se emplean datos de calidad de agua de libre acceso proporcionados por la *Comisión Estatal del Agua en Jalisco*. 
 
-*comentario: Pendiente mencionar las aportaciones de la Comisión Estatal del Agua en Jalisco (CEA Jalisco)*
+## Objetivo
+Evaluar el estado de estos cuerpos de agua como reservas para el suministro en comunidades aledañas, así como generar información básica para el estudio de poblaciones de organismos de interés.
 
-Contiene los siguientes datos:
-- Variables ambientales: pH, temperatura, transparencia, turbiedad, profundidad, oxigenación, conductividad, DQO, DBO, sólidos suspendidos, alcalinidad, cloruros, fluoruros, fósforo, nitritos, nitratos, sulfatos, metales presentes (Al, As, Ba, Cu, Mn, Pb, Na, Zn).
-- Variables biológicas: grupos fitoplanctónicos, zooplanctónicos (Diplostraca, Rotifera, Cyclopoida, Calanoida) y coliformes.
+## Contenido
+Se consideran los siguientes cuerpos de agua:
+-Laguna de Cajititlán
+-Laguna de Zapotlán
+-Río Verde
+-Río Zula-Lerma
+-Río Santiago
 
----
+### Para todos los cuerpos de agua:
+-Variables ambientales:
+ -pH, temperatura, transparencia, turbiedad, profundidad.
+ -Oxigenación, conductividad, DQO, DBO, sólidos suspendidos, alcalinidad.
+ -Cloruros, fluoruros, fósforo, nitritos, nitratos, sulfatos.
+ -Metales presentes (Al, As, Ba, Cu, Mn, Pb, Na, Zn).
+-Código empleado en `R` para cargar, ordenar, curar y visualizar los datos.
+Disponible como datos `crudos`, formato `rectangular` y formato `tidy`.
 
-Participan:
+### Para la Laguna de Cajititlán:
+-Variables biológicas: 
+ -Grupos fitoplanctónicos 
+ -Grupos zooplanctónicos (Diplostraca, Rotifera, Cyclopoida, Calanoida).  
+Disponible como datos `crudos`, formato`rectangular` y formato `tidy`.
+
+## Participan:
 - M. C. Eduardo Juárez Carrillo, Director del Instituto de Limnología de la Universidad de Guadalajara, (CUCBA-UDG)
 - M. C. Martha Alicia Lara Navarro, Centro Universitario de Ciencias Biológicas y Agropecuarias (CUCBA-UDG)
-- Cristofer Camarena Orozco, estudiante de licenciatura
+- Dr. Edlin Guerra Castro, Escuela Nacional de Estudios Superiored Unidad Mérida (ENES-UNAM)
+- Cristofer Camarena Orozco, estudiante de licenciatura, responsable del repositorio (camarenaocristofer@gmail.com)
