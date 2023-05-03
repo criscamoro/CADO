@@ -19,6 +19,13 @@ data_process <- function(x) {
       !idPuntoMuestreo == 34,
       !idMuestra %in% c(12893, 12890, 12981, 52932, 52885, 52888, 52976, 53020)
     ) %>%
+    mutate(valor = replace(valor, idMuestra == 68975, 2.98)) %>%  # 06/2015 est. 04 - Sulfatos (antes 298)
+    mutate(valor = replace(valor, idMuestra == 81675, 1.2)) %>%  # 06/2016 est. 02 - Aluminio (antes 120)
+    mutate(valor = replace(valor, idMuestra == 81676, 0.00286)) %>%  # 06/2016 est. 02 - Arsénico (antes 0.286)
+    mutate(valor = replace(valor, idMuestra == 81685, 0.001)) %>% # 06/2016 est. 02 - Plomo (antes 0.1)
+    mutate(valor = replace(valor, idMuestra == 81687, 0.1)) %>% # 06/2016 est. 02 - Zinc (antes 111.1)
+    mutate(valor = replace(valor, idMuestra == 83003, 746)) %>%  # 12/2016 est. 02 - Conductividad (antes 7.46)
+    mutate(valor = replace(valor, idMuestra == 86135, 741)) %>%  # 12/2016 est. 05 - Conductividad (antes 7.41)
     select(-1) %>%
     mutate(fecha = as.Date(gsub("2017-04-24", "2017-04-27", fecha))) %>%
     mutate(valor = as.character(gsub("<", "", valor))) %>%
@@ -28,6 +35,7 @@ data_process <- function(x) {
       as_tibble(read.xlsx(x[1], sheet = "Parametros"))$idParametros,
       as_tibble(read.xlsx(x[1], sheet = "Parametros"))$param, idParametro
     ))) %>%
+    mutate(idParametro = replace(idParametro, idParametro == "DBO Turbiedad", "DBO")) %>%  # DBO está como "DBO 5"
     mutate(idPuntoMuestreo = as.character(mgsub(
       (as_tibble(read.xlsx(x[1], sheet = x[3], fillMergedCells = T)) %>%
         filter(!is.na(idPunto)) %>%

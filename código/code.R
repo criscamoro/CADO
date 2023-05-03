@@ -1,4 +1,4 @@
-# Programa de monitoreo de la limnología de cuerpos de agua dulce de Occidente
+# Programa de monitoreo de la limnología de Cuerpos de Agua Dulce de Occidente 
 
 #### Paquetes ####
 library(tidyverse)
@@ -328,30 +328,20 @@ noc2 <- caji_amb_tidy_stm_euc %>%
 mantel(xdis = as.dist(noc), ydis = as.dist(noc2), method = "spearman", permutations = 999)
 
 # Análisis del fitoplancton (Laguna de Cajititlán) ----
-# Gráfico de series temporales por especie
-
-ggplot(data = caji_fito_rect) +
-  geom_line(mapping = aes(
-    x = año,
-    y = conteo
-  )) +
-  facet_wrap(~taxa, scales = "free")
-
 # Cuadro de resumen de taxa
-
-treemap <- function(id) {
+treemap <- function(nvl) {
   ggplot(data = caji_fito_rect %>% 
-           group_by({{id}}) %>% 
+           group_by({{nvl}}) %>% 
            summarise(conteo = sum(conteo)), 
-         aes(area = conteo, fill = {{id}},
-         label = paste({{id}}, conteo, sep = "\n"))) +
+         aes(area = conteo, fill = {{nvl}},
+             label = paste({{nvl}}, conteo, sep = "\n"))) +
     geom_treemap() +
     geom_treemap_text(color = "white", place = "centre", size = 15)
 }
 treemap(Phylum)
 
-# Abundancia
-# absoluta
+# Abundancia, Riqueza y Diversidad por taxa, por fecha (N, Ni, Sobs, H')
+# Abundancia absoluta
 ab_n <- function(periodo) {
   ggplot(
     data = caji_fito_rect %>% 
@@ -360,16 +350,16 @@ ab_n <- function(periodo) {
     aes(
       x = {{periodo}},
       y = conteo
-      )
-    ) +
+    )
+  ) +
     geom_line() +
     geom_point()
 }
 
 ab_n(año)
 
-# relativa
-ab_f <- function(id, periodo) {
+# Abundancia relativa
+ab_f <- function(nvl, periodo) {
   ggplot(
     data = caji_fito_rect %>% 
       group_by({{periodo}}) %>% 
@@ -377,7 +367,7 @@ ab_f <- function(id, periodo) {
     aes(
       x = {{periodo}},
       y = ni,
-      fill = {{id}}
+      fill = {{nvl}}
     )
   ) +
     geom_bar(stat = "identity")
@@ -385,8 +375,7 @@ ab_f <- function(id, periodo) {
 
 ab_f(Phylum, año)
 
-# Índices de Diversidad univariados por taxa, por fecha (Sobs, H' y D')
-# Sobs
+# Riqueza absoluta
 sobs_n <- function(periodo) {
   ggplot(
     data = caji_fito_rect %>% 
@@ -405,6 +394,7 @@ sobs_n <- function(periodo) {
 sobs_n(fecha)
 sobs_n(año)  
 
+# Composición de la riqueza
 sobs_f <- function(periodo) {
   ggplot(
     data = caji_fito_rect %>% 
@@ -428,7 +418,7 @@ sobs_f <- function(periodo) {
 sobs_f(año)
 sobs_f(fecha)
 
-# Shannon
+# Entropía de Shannon-Wiener (bits)
 shannon <- function(x) {
   f <- (x[x > 0]/sum(x))
   -sum(f * log(f, 2))
