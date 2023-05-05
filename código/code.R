@@ -444,3 +444,108 @@ sh <- function(periodo) {
 
 sh(año)
 sh(fecha)
+
+# nMDS
+# Suma de conteo por fecha
+caji_fito_mds_fecha <- metaMDS(caji_fito_tidy %>% 
+                               group_by(fecha) %>% 
+                               summarise(across(1:61, sum)) %>% 
+                               select(!c(fecha)), trymax = 1000)
+
+mds_fecha_plot <- ggplot(as.tibble(caji_fito_mds_fecha$points) %>% mutate(fecha = unique(caji_fito_tidy$fecha)), 
+                         aes(x = MDS1, y = MDS2)) + 
+  geom_point(aes(size = 6, color = fecha)) +
+  labs(title = "nMDS del fitoplancton de la Laguna de Cajititlán de 2014 a 2019") +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.line = element_line(color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(), 
+    panel.border = element_blank(),
+    panel.background = element_blank()
+    )
+
+ggsave("figuras/ord_fito/nmds_caji_fito_fecha.png", mds_fecha_plot,
+       width = 1920, height = 1080, units = "px", pointsize = 12,
+       bg = "white", dpi = 300)
+
+# Suma de conteo por año
+caji_fito_mds_año <- metaMDS(caji_fito_tidy %>% 
+                               group_by(año) %>% 
+                               summarise(across(1:61, sum)) %>% 
+                               select(!c(año)), trymax = 1000)
+
+mds_año_plot <- ggplot(as.tibble(caji_fito_mds_año$points) %>% mutate(año = unique(caji_fito_tidy$año)), 
+       aes(x = MDS1, y = MDS2, label = año)) + 
+  geom_point(aes(size = 6, color = "green")) +
+  geom_text(vjust = -0.5) +
+  geom_line(arrow = arrow(length = unit(0.5, "cm"), type = "closed")) +
+  labs(title = "nMDS (año)") +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    legend.position = "none", 
+    axis.line = element_line(color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(), 
+    panel.border = element_blank(),
+    panel.background = element_blank()
+    ) 
+
+ggsave("figuras/ord_fito/nmds_caji_fito_año.png", mds_año_plot,
+       width = 1920, height = 1080, units = "px", pointsize = 12,
+       bg = "white", dpi = 300)
+
+# Suma de conteo por mes
+caji_fito_mds_mes <- metaMDS(caji_fito_tidy %>% 
+                                 group_by(mes) %>% 
+                                 summarise(across(1:61, sum)) %>% 
+                                 select(!c(mes)), trymax = 1000)
+
+mds_mes_plot <- ggplot(as.tibble(caji_fito_mds_mes$points) %>% mutate(mes = 1:12), 
+       aes(x = MDS1, y = MDS2, label = mes)) + 
+  geom_point(aes(size = 6, color = "green")) +
+  geom_text(vjust = -0.8) +
+  labs(title = "nMDS del fitoplancton de la Laguna de Cajititlán, agrupado por mes") +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    legend.position = "none", axis.line = element_line(color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(), 
+    panel.border = element_blank(),
+    panel.background = element_blank()
+    )
+ggsave("figuras/ord_fito/nmds_caji_fito_mes.png", mds_mes_plot,
+       width = 1920, height = 1080, units = "px", pointsize = 12,
+       bg = "white", dpi = 300)
+
+# PCoA por año
+# Matriz de asociación Bray-Curtis con transformación doble raíz cuadrada
+caji_fito_sqrt2bray <- vegdist(caji_fito_tidy %>% 
+                          group_by(año) %>% 
+                          summarise(across(1:61, ~sqrt(sqrt(sum(.))))) %>% 
+                          select(!c(año)), method = "bray")
+
+caji_fito_pcoa <- cmdscale(caji_fito_sqrt2bray, eig = T)
+
+pcoa_año_plot <- ggplot(as.tibble(caji_fito_pcoa$points) %>% mutate(año = unique(caji_fito_tidy$año)), 
+       aes(x = V1, y = V2, label = año)) + 
+  geom_point(aes(size = 6, color = "green")) +
+  geom_text(vjust = -0.6) +
+  geom_line(arrow = arrow(length = unit(0.5, "cm"), type = "closed")) +
+  labs(title = "PCoA del fitoplancton de la Laguna de Cajititlán de 2014 a 2019", 
+       x = paste("PCoA 1 (", round(caji_fito_pcoa$eig[1]/sum(caji_fito_pcoa$eig) * 100, digits = 2), "%)", sep = ""), 
+       y = paste("PCoA 2 (", round(caji_fito_pcoa$eig[2]/sum(caji_fito_pcoa$eig) * 100, digits = 2), "%)", sep = "")) +
+  scale_x_reverse() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    legend.position = "none", 
+    axis.line = element_line(color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(), 
+    panel.border = element_blank(),
+    panel.background = element_blank()
+  ) 
+
+ggsave("figuras/ord_fito/pcoa_caji_fito_año.png", pcoa_año_plot,
+       width = 1920, height = 1080, units = "px", pointsize = 12,
+       bg = "white", dpi = 300)
