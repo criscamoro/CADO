@@ -7,7 +7,7 @@ Repositorio del programa de monitoreo de las características fisicoquímicas y 
 Evaluar el estado de estos cuerpos de agua como reservas para el suministro en comunidades aledañas, así como generar información básica para el estudio de poblaciones de organismos de interés.
 
 ## Contenido
-Se consideran los siguientes cuerpos de agua:
+Se consideran los siguientes cuerpos de agua:  
 -Laguna de Cajititlán  
 -Laguna de Zapotlán  
 -Río Verde  
