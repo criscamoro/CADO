@@ -74,8 +74,8 @@ procesar_datos(santi)
 
 # Guardar como csv ----
 
-write.csv(caji_amb_tidy, "datos/tidy/caji_amb_tidy.csv", na = "")
-write.csv(zapo_amb_tidy, "datos/tidy/zapo_amb_tidy.csv", na = "")
-write.csv(verde_amb_tidy, "datos/tidy/verde_amb_tidy.csv", na = "")
-write.csv(lerma_amb_tidy, "datos/tidy/lerma_amb_tidy.csv", na = "")
-write.csv(santi_amb_tidy, "datos/tidy/santi_amb_tidy.csv", na = "")
+write.csv(caji_amb_tidy, "datos/tidy/caji_amb_tidy.csv", row.names = F, na = "")
+write.csv(zapo_amb_tidy, "datos/tidy/zapo_amb_tidy.csv", row.names = F, na = "")
+write.csv(verde_amb_tidy, "datos/tidy/verde_amb_tidy.csv", row.names = F, na = "")
+write.csv(lerma_amb_tidy, "datos/tidy/lerma_amb_tidy.csv", row.names = F, na = "")
+write.csv(santi_amb_tidy, "datos/tidy/santi_amb_tidy.csv", row.names = F, na = "")
