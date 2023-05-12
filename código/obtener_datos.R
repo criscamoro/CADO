@@ -25,7 +25,8 @@ procesar_datos <- function(x) {
       !between(idMuestra, 77532, 77903), # (verde) puntos de muestreo que no correponden a este cuerpo de agua
       !idMuestra %in% c(12890, 12981, 12893, 52932, 52885, 52888, 52976, 53020), # (santi) muestras duplicadas
       !idPuntoMuestreo == 34, # No pertenece a ninguno de los puntos de muestreo de los 5 cuerpos de agua
-      !idParametro %in% c(41, 42, 43, 50) # Variables cualitativas
+      !idParametro %in% c(41, 42, 43, 50, 39), # Variables cualitativas
+      !valor == "-"
     ) %>%
     mutate(valor = replace(valor, idMuestra == 68975, 2.98)) %>%  # (caji) 06/2015 est. 04 - Sulfatos (antes 298)
     mutate(valor = replace(valor, idMuestra == 81675, 1.2)) %>%  # (caji) 06/2016 est. 02 - Aluminio (antes 120)
@@ -37,7 +38,7 @@ procesar_datos <- function(x) {
     select(-1) %>%
     mutate(fecha = as.Date(gsub("2017-04-24", "2017-04-27", fecha))) %>% #fecha errónea
     mutate(valor = as.character(gsub("<", "", valor))) %>%
-    mutate(valor = suppressWarnings(as.numeric(gsub("-", "", valor)))) %>%
+    mutate(valor = suppressWarnings(as.numeric(valor))) %>%
     mutate(idParametro = as.character(idParametro)) %>%
     mutate(idParametro = as.character(mgsub(
       as_tibble(read.xlsx(x[1], sheet = "Parametros"))$idParametros,

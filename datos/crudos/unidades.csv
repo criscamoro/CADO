@@ -1,53 +1,51 @@
-"idParametros","param","Parametros","unidades"
-1,"Temperatura","Temperatura","°C"
-2,"pH","Potencial de hidrógeno",
-3,"Oxígeno disuelto","Oxígeno disuelto","mg/l"
-4,"Conductividad","Conductividad","µS/cm"
-5,"Turbiedad","Turbiedad","UNT"
-6,"Alcalinidad total","Alcalinidad total","mg/l"
-7,"Cloruros totales","Cloruros totales","mg/l"
-8,"Dureza total","Dureza total","mg/l"
-9,"Fluoruros","Fluoruros","mg/l"
-10,"Nitrógeno de nitratos","Nitrógeno de nitratos","mg/l"
-11,"Nitrógeno de nitritos","Nitrógeno de nitritos","mg/l"
-12,"Nitrógeno amoniacal","Nitrógeno amoniacal","mg/l"
-13,"Nitrógeno total Kjeldahl","Nitrógeno total Kjeldahl","mg/l"
-14,"Sulfatos","Sulfatos","mg/l"
-15,"SAAM","Sustancias activas al azul de metileno","mg/l"
-16,"DBO 5","Demanda bioquímica de oxígeno","mg/l"
-17,"DQO","Demanda química de oxígeno","mg/l"
-18,"Grasas y aceites","Grasas y aceites","mg/l"
-19,"Fósforo total","Fósforo total","mg/l"
-20,"SST","Sólidos suspendidos totales","mg/l"
-21,"Sólidos disueltos tot.","Sólidos disueltos totales","mg/l"
-22,"Sólidos sedimentables","Sólidos sedimentables","ml/l"
-23,"Sulfuros","Sulfuros","mg/l"
-24,"Aluminio","Aluminio","mg/l"
-25,"Arsénico","Arsénico","mg/l"
-26,"Bario","Bario","mg/l"
-27,"Cadmio","Cadmio","mg/l"
-28,"Cobre","Cobre","mg/l"
-29,"Cromo","Cromo","mg/l"
-30,"Fierro","Fierro","mg/l"
-31,"Manganeso","Manganeso","mg/l"
-32,"Mercurio","Mercurio","mg/l"
-33,"Níquel","Níquel","mg/l"
-34,"Plomo","Plomo","mg/l"
-35,"Sodio","Sodio","mg/l"
-36,"Zinc","Zinc","mg/l"
-37,"Coliformes totales","Coliformes totales","NMP/100ml"
-38,"Coliformes fecales","Coliformes fecales","NMP/100ml"
-39,"Materia flotante","Presencia de materia flotante",
-45,"Profundidad","Profundidad","m"
-46,"Temp. ambiente","Temperatura ambiente","°C"
-47,"Transparencia Secchi","Transparencia Secchi","m"
-48,"Acidez total","Acidez total",
-52,"Dureza de calcio","Dureza de calcio","mg/l"
-53,"Dureza de manganeso","Dureza de manganeso","mg/l"
-54,"Fenoles","Fenoles","mg/l"
-55,"Sólidos totales","Sólidos totales","mg/l"
-74,"Sólidos totales","Nitrógeno total",
-75,"Clorofilas","Clorofilas A, B y C","mg/l"
-78,"Plata","Plata","mg/l"
-,"conteo de fitoplancton","conteo de fitoplancton","cel/ml"
-,"conteo de zooplancton","conteo de zooplancton","ind/25ml"
+Parámetro,Descripción,unidades, Método
+Temperatura,Temperatura,°C,NMX-AA-007
+pH,Potencial de hidrógeno,,NMX-AA-008
+Oxígeno disuelto,Oxígeno disuelto,mg/l,NMX-AA-012
+Conductividad,Conductividad,µS/cm,NMX-AA-093
+Turbiedad,Turbiedad,UNT,NMX-AA-038
+Alcalinidad total,Alcalinidad total,mg/l,NMX-AA-036
+Cloruros totales,Cloruros totales,mg/l,NMX-AA-073
+Dureza total,Dureza total,mg/l,NMX-AA-072
+Fluoruros,Fluoruros,mg/l,NMX-AA-077
+Nitrógeno de nitratos,Nitrógeno de nitratos,mg/l,NMX-AA-079
+Nitrógeno de nitritos,Nitrógeno de nitritos,mg/l,NMX-AA-099
+Nitrógeno amoniacal,Nitrógeno amoniacal,mg/l,NMX-AA-026
+Nitrógeno total Kjeldahl,Nitrógeno total Kjeldahl,mg/l,NMX-AA-026
+Sulfatos,Sulfatos,mg/l,NMX-AA-074
+SAAM,Sustancias activas al azul de metileno,mg/l,NMX-AA-039
+DBO 5,Demanda bioquímica de oxígeno,mg/l,NMX-AA-028
+DQO,Demanda química de oxígeno,mg/l,NMX-AA-030/2
+Grasas y aceites,Grasas y aceites,mg/l,NMX-AA-005
+Fósforo total,Fósforo total,mg/l,NMX-AA-029
+SST,Sólidos suspendidos totales,mg/l,NMX-AA-034
+Sólidos disueltos tot.,Sólidos disueltos totales,mg/l,NMX-AA-034
+Sólidos sedimentables,Sólidos sedimentables,ml/l,NMX-AA-004
+Sulfuros,Sulfuros,mg/l,NMX-AA-084
+Aluminio,Aluminio,mg/l,NMX-AA-051
+Arsénico,Arsénico,mg/l,NMX-AA-051
+Bario,Bario,mg/l,NMX-AA-051
+Cadmio,Cadmio,mg/l,NMX-AA-051
+Cobre,Cobre,mg/l,NMX-AA-051
+Cromo,Cromo,mg/l,NMX-AA-051
+Fierro,Fierro,mg/l,NMX-AA-051
+Manganeso,Manganeso,mg/l,NMX-AA-051
+Mercurio,Mercurio,mg/l,NMX-AA-051
+Níquel,Níquel,mg/l,NMX-AA-051
+Plomo,Plomo,mg/l,NMX-AA-051
+Sodio,Sodio,mg/l,NMX-AA-051
+Zinc,Zinc,mg/l,NMX-AA-051
+Coliformes totales,Coliformes totales,NMP/100ml,NMX-AA-042
+Coliformes fecales,Coliformes fecales,NMP/100ml,NMX-AA-042
+Profundidad,Profundidad,m,
+Temp. ambiente,Temperatura ambiente,°C,
+Transparencia Secchi,Transparencia Secchi,m,
+Acidez total,Acidez total,,NMX-AA-036
+Dureza de calcio,Dureza de calcio,mg/l,NMX-AA-072
+Dureza de manganeso,Dureza de manganeso,mg/l,NMX-AA-072
+Fenoles,Fenoles,mg/l,NMX-AA-050
+Sólidos totales,Sólidos totales,mg/l,NMX-AA-034
+Nitrógeno total,Nitrógeno total,,NMX-AA-026
+Clorofilas,"Clorofilas A, B y C",mg/l,SM-10200-H
+Plata,Plata,mg/l,NMX-AA-051
+conteo de fitoplancton,conteo de fitoplancton,cel/ml,
