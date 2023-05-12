@@ -1,5 +1,5 @@
 # Obtener y limpiar datos de la Comisión Estatal del Agua Jalisco
-
+options(scipen = 999)
 # Argumentos para la función ----
 # 1: url que contiene los datos en el portal de la CEA Jalisco
 # 2: Nombre del cuerpo de agua, usado para accedera a la pestaña con los datos
@@ -19,7 +19,7 @@ procesar_datos <- function(x) {
     mutate(idMuestra = suppressWarnings(as.numeric(idMuestra))) %>%
     filter(fecha != "NULL") %>%
     filter(
-      !between(idMuestra, 112361, 112610), # (caji) datos de "Materia flotante" valor = 0 y fechas inconexas
+      !between(idMuestra, 112361, 112610), # (caji) datos con fechas inconexas
       !between(idMuestra, 122491, 122534), # (zapo) muestras duplicadas (se toma la idMuestra más antigua)
       !between(idMuestra, 99587, 99631), # (verde) datos duplicados
       !between(idMuestra, 77532, 77903), # (verde) puntos de muestreo que no correponden a este cuerpo de agua
