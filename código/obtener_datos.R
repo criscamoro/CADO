@@ -19,7 +19,6 @@ procesar_datos <- function(x) {
     mutate(idMuestra = suppressWarnings(as.numeric(idMuestra))) %>%
     filter(fecha != "NULL") %>%
     filter(
-      !between(idMuestra, 112361, 112610), # (caji) datos con fechas inconexas
       !between(idMuestra, 122491, 122534), # (zapo) muestras duplicadas (se toma la idMuestra más antigua)
       !between(idMuestra, 99587, 99631), # (verde) datos duplicados
       !between(idMuestra, 77532, 77903), # (verde) puntos de muestreo que no correponden a este cuerpo de agua
@@ -32,7 +31,7 @@ procesar_datos <- function(x) {
     mutate(valor = replace(valor, idMuestra == 81675, 1.2)) %>%  # (caji) 06/2016 est. 02 - Aluminio (antes 120)
     mutate(valor = replace(valor, idMuestra == 81676, 0.00286)) %>%  # (caji) 06/2016 est. 02 - Arsénico (antes 0.286)
     mutate(valor = replace(valor, idMuestra == 81685, 0.001)) %>% # (caji) 06/2016 est. 02 - Plomo (antes 0.1)
-    mutate(valor = replace(valor, idMuestra == 81687, 0.1)) %>% # (caji) 06/2016 est. 02 - Zinc (antes 111.1)
+    mutate(valor = replace(valor, idMuestra == 81687, 0.1111)) %>% # (caji) 06/2016 est. 02 - Zinc (antes 111.1)
     mutate(valor = replace(valor, idMuestra == 83003, 746)) %>%  # (caji) 12/2016 est. 02 - Conductividad (antes 7.46)
     mutate(valor = replace(valor, idMuestra == 86135, 741)) %>%  # (caji) 12/2016 est. 05 - Conductividad (antes 7.41)
     select(-1) %>%
