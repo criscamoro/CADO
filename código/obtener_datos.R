@@ -25,7 +25,8 @@ procesar_datos <- function(x) {
       !idMuestra %in% c(12890, 12981, 12893, 52932, 52885, 52888, 52976, 53020), # (santi) muestras duplicadas
       !idPuntoMuestreo == 34, # No pertenece a ninguno de los puntos de muestreo de los 5 cuerpos de agua
       !idParametro %in% c(41, 42, 43, 50, 39), # Variables cualitativas
-      !valor == "-"
+      !valor == "-", # la CEA representa NAs con "-"
+      !valor == "-1" # posible typo, queriendo representar un NA
     ) %>%
     mutate(valor = replace(valor, idMuestra == 68975, 2.98)) %>%  # (caji) 06/2015 est. 04 - Sulfatos (antes 298)
     mutate(valor = replace(valor, idMuestra == 81675, 1.2)) %>%  # (caji) 06/2016 est. 02 - Aluminio (antes 120)
