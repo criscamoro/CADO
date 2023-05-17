@@ -38,6 +38,7 @@ procesar_datos <- function(x) {
     select(-1) %>%
     mutate(fecha = as.Date(gsub("2017-04-24", "2017-04-27", fecha))) %>% #fecha errónea
     mutate(valor = as.character(gsub("<", "", valor))) %>%
+    mutate(valor = as.character(gsub("-2.62", "2.62", valor))) %>% #(zapo)valor negativo imposible para Clorofila
     mutate(valor = suppressWarnings(as.numeric(valor))) %>%
     mutate(idParametro = as.character(idParametro)) %>%
     mutate(idParametro = as.character(mgsub(
