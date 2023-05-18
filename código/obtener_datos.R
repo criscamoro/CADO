@@ -26,6 +26,7 @@ procesar_datos <- function(x) {
       !idPuntoMuestreo == 34, # No pertenece a ninguno de los puntos de muestreo de los 5 cuerpos de agua
       !idParametro %in% c(41, 42, 43, 50, 39), # Variables cualitativas
       !valor == "-", # la CEA representa NAs con "-"
+      !valor == "0", # Los variables no pueden tener 0 como valor, probablemente se trata de NAs
       !valor == "-1" # posible typo, queriendo representar un NA
     ) %>%
     mutate(valor = replace(valor, idMuestra == 68975, 2.98)) %>%  # (caji) 06/2015 est. 04 - Sulfatos (antes 298)
@@ -45,7 +46,7 @@ procesar_datos <- function(x) {
       as_tibble(read.xlsx(x[1], sheet = "Parametros"))$idParametros,
       as_tibble(read.xlsx(x[1], sheet = "Parametros"))$param, idParametro
     ))) %>%
-    mutate(idParametro = replace(idParametro, idParametro == "DBO Turbiedad", "DBO")) %>%  # DBO está como "DBO 5"
+    mutate(idParametro = replace(idParametro, idParametro == "DBO Turbiedad", "DBO")) %>% # DBO está como "DBO 5"
     mutate(idPuntoMuestreo = as.character(mgsub(
       (as_tibble(read.xlsx(x[1], sheet = x[3], fillMergedCells = T)) %>%
         filter(!is.na(idPunto)) %>%
@@ -56,6 +57,11 @@ procesar_datos <- function(x) {
         mutate(idPunto = suppressWarnings(as.numeric(idPunto))) %>%
         filter(!between(idPunto, 14, 23)))$clave, idPuntoMuestreo
     ))) %>%
+    mutate(idPuntoMuestreo = replace(idPuntoMuestreo, idPuntoMuestreo == "RS-RS-010", "RS-10")) %>% # mgsub sustituye por partes
+    mutate(idPuntoMuestreo = replace(idPuntoMuestreo, idPuntoMuestreo == "AA-0RS-01", "AA-01")) %>% # 1 -> RS-01; AA-0(1) -> AA-0(RS-01)
+    mutate(idPuntoMuestreo = replace(idPuntoMuestreo, idPuntoMuestreo == "AA-0RS-02", "AA-02")) %>% 
+    mutate(idPuntoMuestreo = replace(idPuntoMuestreo, idPuntoMuestreo == "RZ-0RS-01", "RZ-01")) %>%
+    
     pivot_wider(names_from = "idParametro", values_from = "valor") %>%
     rename(est = idPuntoMuestreo) %>%
     mutate(est = as.factor(est)) %>%

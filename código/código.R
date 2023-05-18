@@ -15,6 +15,7 @@ library(vtable)
 library(vegan)
 library(clustsig)
 library(treemapify)
+library(skimr)
 
 #### Preparación de datos ####
 # Datos ambientales ----
@@ -68,6 +69,13 @@ datos_rect <- function(n) {
 }
 
 lapply(nom, datos_rect)
+
+# Perfil de calidad de datos
+caji_amb_tidy %>% skim()
+zapo_amb_tidy %>% skim()
+verde_amb_tidy %>% skim()
+lerma_amb_tidy %>% skim()
+santi_amb_tidy %>% skim()
 
 # Zooplancton de la Laguna de Cajititlán ----
 # Base de datos de zooplancton formato tidy
