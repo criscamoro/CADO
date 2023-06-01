@@ -1,4 +1,4 @@
-# Programa de monitoreo de la limnología de Cuerpos de Agua Dulce de Occidente 
+# Programa de monitoreo de la limnología de Cuerpos de Agua Dulce de Oriente
 # Instituto de Limnología, Centro Universitario de Ciencias Biológicas y Agropecuarias de la Universidad de Guadalajara
 # Cristofer Camarena Orozco (camarenaocristofer@gmail.com)
 
@@ -16,6 +16,9 @@ library(vegan)
 library(clustsig)
 library(treemapify)
 library(skimr)
+library(tidymodels)
+library(embed)
+library(tidytext)
 
 #### Preparación de datos ####
 # Datos ambientales ----
@@ -557,3 +560,127 @@ pcoa_año_plot <- ggplot(as.tibble(caji_fito_pcoa$points) %>% mutate(año = uniq
 ggsave("figuras/ord_fito/pcoa_caji_fito_año.png", pcoa_año_plot,
        width = 1920, height = 1080, units = "px", pointsize = 12,
        bg = "white", dpi = 300)
+
+#### Modelación exploratoria ####
+# Modelo linear del fósforo total (Cajititlán) en función de la fecha ----
+ml_P <- lm(`Fósforo total` ~ fecha, caji_amb_tidy)
+
+# coeficientes 
+coef(ml_P)
+
+# R2 ajustado
+summary(ml_P)$adj.r.squared
+
+# Gráfico
+ggplot(caji_amb_tidy, aes(fecha, `Fósforo total`)) +
+  geom_point(aes(color = est)) +
+  geom_abline(aes(
+    intercept = coef(ml_P)[[1]], 
+    slope = coef(ml_P)[[2]]
+    ), color = "blue") +
+  theme_classic()
+
+# Reducción de dimensionalidad (unsupervised machine learning) ----
+# PCA ----
+# recipe y prep
+rec_pca <- function(datos) {
+    prep(
+      recipe(~ ., data = datos) %>% # todos los datos (unsupervised)
+        update_role(fecha, año, new_role = "tiempo") %>% 
+        update_role(mes, new_role = "ciclo") %>% 
+        update_role(est, new_role = "sitio") %>% 
+        step_naomit(all_predictors()) %>% # omitir missing values
+        step_normalize(all_predictors()) %>% # media = 0, D.E. = 1
+        step_pca(all_predictors())) # PCA
+}
+
+# Resultados PCA
+caji_amb_pca <- rec_pca(caji_amb_tidy)
+zapo_amb_pca <- rec_pca(zapo_amb_tidy)
+verde_amb_pca <- rec_pca(verde_amb_tidy)
+lerma_amb_pca <- rec_pca(lerma_amb_tidy)
+santi_amb_pca <- rec_pca(santi_amb_tidy)
+
+# Barras horizontales de los componentes
+pca_plot1 <- function(pca_res) {
+  tidy(pca_res, 3) %>% 
+    filter(component %in% paste0("PC", 1:5)) %>% 
+    mutate(component = fct_inorder(component)) %>% 
+    ggplot(aes(value, terms, fill = terms)) +
+    geom_col(show.legend = F) +
+    facet_wrap(~component, nrow = 1) +
+    labs(y = NULL) +
+    theme_classic()
+}
+
+pca_plot1(caji_amb_pca)
+pca_plot1(zapo_amb_pca)
+pca_plot1(verde_amb_pca)
+pca_plot1(lerma_amb_pca)
+pca_plot1(santi_amb_pca)
+
+# Barras de componentes más importantes
+pca_plot2 <- function(pca_res) {
+  tidy(pca_res, 3) %>% 
+    filter(component %in% paste0("PC", 1:4)) %>% 
+    group_by(component) %>% 
+    top_n(8, abs(value)) %>% 
+    ungroup() %>% 
+    mutate(terms = reorder_within(terms, abs(value), component)) %>% 
+    ggplot(aes(abs(value), terms, fill = value > 0)) +
+    geom_col() +
+    scale_y_reordered() +
+    facet_wrap(~component, scales = "free_y") +
+    labs(y = NULL, fill = "¿Positivo?")
+}
+
+pca_plot2(caji_amb_pca)
+pca_plot2(zapo_amb_pca)
+pca_plot2(verde_amb_pca)
+pca_plot2(lerma_amb_pca)
+pca_plot2(santi_amb_pca)
+
+# Ordenación
+pca_plot3 <- function(pca_res, fac_col) {
+  juice(pca_res) %>% 
+    ggplot(aes(PC1, PC2)) +
+    geom_point(aes(color = {{fac_col}}), alpha = 0.7, size = 2) + 
+    theme_classic()
+}
+
+pca_plot3(caji_amb_pca, año)
+pca_plot3(zapo_amb_pca, mes)
+pca_plot3(verde_amb_pca, est)
+pca_plot3(lerma_amb_pca, mes)
+pca_plot3(santi_amb_pca, año)
+
+# UMAP ----
+rec_umap <- function(datos) {
+  prep(
+    recipe(~ ., data = datos) %>% 
+      update_role(fecha, año, new_role = "tiempo") %>% 
+      update_role(mes, new_role = "ciclo") %>% 
+      update_role(est, new_role = "sitio") %>% 
+      step_naomit(all_predictors()) %>% 
+      step_normalize(all_predictors()) %>% 
+      step_umap(all_predictors()))
+}
+
+caji_amb_umap <- rec_umap(caji_amb_tidy)
+zapo_amb_umap <- rec_umap(zapo_amb_tidy)
+verde_amb_umap <- rec_umap(verde_amb_tidy)
+lerma_amb_umap <- rec_umap(lerma_amb_tidy)
+santi_amb_umap <- rec_umap(santi_amb_tidy)
+
+umap_plot <- function(umap_res, fac_col) {
+  juice(umap_res) %>% 
+    ggplot(aes(UMAP1, UMAP2)) +
+    geom_point(aes(color = {{fac_col}}), alpha = 0.7, size = 2) + 
+    theme_classic()
+}
+
+umap_plot(caji_amb_umap, año)
+umap_plot(zapo_amb_umap, año)
+umap_plot(verde_amb_umap, est)
+umap_plot(lerma_amb_umap, mes)
+umap_plot(santi_amb_umap, año)
